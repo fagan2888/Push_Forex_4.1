@@ -1,0 +1,190 @@
+<div class="row" style="padding:0px 15px 0px 15px">
+	<div class="col-xs-12 col-sm-12	col-md-12 col-lg-12" style="color:#fff">{{msg}}</div>
+
+	<div class="row">
+		<!--<div class="col-xs-12 col-sm-1	col-md-1 col-lg-1" style="margin-top:15px">
+			<span style="color: #fff;padding-left: 15px;    line-height: 27px;">Server:</span>
+		</div>
+		<div class="col-xs-12 col-sm-11	col-md-11 col-lg-11" style="margin-top:15px">
+			<div class="serverButtons" style="">
+		        <button type="button" class="btn btn-rounded btn btn-icon button_server server_button_active" ng-click="setServer('production')" data-timespan="production" tabindex="0">Production</button>     
+		        <button type="button" class="btn btn-rounded btn btn-icon button_server" ng-click="setServer('development')" data-timespan="development" tabindex="0">Development</button>    
+		     </div>
+		 </div>-->
+		 <div class="col-xs-12 col-sm-12 col-md-12 col-lg-12" style="    margin-top: 20px;">
+			 <form class="form-inline">
+			  	<div class="form-group">
+			    	<label for="exampleInputEmail2" style="color:white;padding-left:15px;padding-right: 15px;font-weight: 100;line-height: 28px;">Server</label>
+			    	<button type="button" style="float:right" class="form-control btn btn-rounded btn btn-icon button_server server_button_active" ng-click="setServer('production')" data-timespan="production" tabindex="0">Production</button>     
+			  	</div>
+			</form>
+		</div>
+	</div>
+	
+	<div class="row">
+		<hr>
+	</div>
+	
+	<div class="row" style="height:60px">
+		<div class="col-xs-12 col-sm-12 col-md-12 col-lg-12">
+
+			<form class="form-inline">
+				<div class="form-group" style="margin-left:10px;margin-top:10px">
+				    <div class="input-group">
+				      	<div class="input-group-addon">Magic</div>
+				      	<input ng-model="magic" type="text" class="form-control" id="exampleInputAmount0" style="border: 0;height: 32px;" placeholder="Magic">
+				    </div>
+				</div>
+				<div class="form-group" style="margin-left:10px;margin-top:10px">
+				    <div class="input-group">
+				      	<div class="input-group-addon">Stack</div>
+				      	<input ng-model="stack" type="text" class="form-control" id="exampleInputAmount1" style="border: 0;height: 32px;" placeholder="Stack" readonly>
+				    </div>
+				</div>
+				<div class="form-group" style="margin-left:10px;margin-top:10px">
+				    <div class="input-group">
+				      	<div class="input-group-addon">Leverage</div>
+				      	<input ng-model="leverage" type="text" class="form-control" id="exampleInputAmount1" style="border: 0;height: 32px;" placeholder="Leverage" readonly>
+				    </div>
+				</div>
+				<div class="form-group" style="margin-left:10px;margin-top:10px">
+				    <div class="input-group">
+				      	<div class="input-group-addon">Lots</div>
+				      	<input ng-model="lots" type="text" class="form-control" id="exampleInputAmount1" style="border: 0;height: 32px;" placeholder="Lots" readonly>
+				    </div>
+				</div>
+
+			  	<button type="submit" class="btn btn-default" ng-click="loadPerformance($event)" style="margin-left:10px;border:0px;border-radius:0px;margin-top:20px;margin-bottom:10px">Send</button>
+			</form>
+
+		</div>
+	</div>
+
+
+	<div ng-if="dataLoad">
+
+		<div class="row btn-group btn-group-justified" style="height:120px;margin-top: 45px;">
+		    <div class="col-lg-2 col-md-2 col-sm-4 col-xs-12" style="height:100px;padding:0px">
+		      <div class="off_pitch_page_hexagon" style="-webkit-clip-path: url('#polygon-clip-hexagon-big');clip-path: url('#polygon-clip-hexagon-big');">
+		      	<span style="color:#fff">Total Pips</span>
+		      </div>
+		      <div class="off_pitch_page_hexagon_right" style="-webkit-clip-path: url('#polygon-clip-hexagon-big');clip-path: url('#polygon-clip-hexagon-big');">{{arrPerformance.pipsEarned || 0}}</div>
+		    </div>
+		    <div class="col-lg-2 col-md-2 col-sm-4 col-xs-12" style="height:100px;padding:0px">
+		      <div class="off_pitch_page_hexagon" style="-webkit-clip-path: url('#polygon-clip-hexagon-big');clip-path: url('#polygon-clip-hexagon-big');">
+		      	<span style="color:#fff">Total Euro</span>
+		      </div>
+		      <div class="off_pitch_page_hexagon_right" style="-webkit-clip-path: url('#polygon-clip-hexagon-big');clip-path: url('#polygon-clip-hexagon-big');">{{arrPerformance.EuroEarned || 0}}</div>
+		    </div>
+		    <div class="col-lg-2 col-md-2 col-sm-4 col-xs-12" style="height:100px;padding:0px">
+		      <div class="off_pitch_page_hexagon" style="-webkit-clip-path: url('#polygon-clip-hexagon-big');clip-path: url('#polygon-clip-hexagon-big');">
+		      	<span style="color:#fff">Total Return</span>
+		      </div>
+		      <div class="off_pitch_page_hexagon_right" style="-webkit-clip-path: url('#polygon-clip-hexagon-big');clip-path: url('#polygon-clip-hexagon-big');">{{arrPerformance.percEarned || 0}}%</div>
+		    </div>
+		    <div class="col-lg-2 col-md-2 col-sm-4 col-xs-12" style="height:100px;padding:0px">
+		      <div class="off_pitch_page_hexagon" style="-webkit-clip-path: url('#polygon-clip-hexagon-big');clip-path: url('#polygon-clip-hexagon-big');">
+		      	<span style="color:#fff">Op. days</span>
+		      </div>
+		      <div class="off_pitch_page_hexagon_right" style="-webkit-clip-path: url('#polygon-clip-hexagon-big');clip-path: url('#polygon-clip-hexagon-big');">{{arrPerformance.daysOperation || 0}}</div>
+		    </div>
+		    <div class="col-lg-2 col-md-2 col-sm-4 col-xs-12" style="height:100px;padding:0px">
+		      <div class="off_pitch_page_hexagon" style="-webkit-clip-path: url('#polygon-clip-hexagon-big');clip-path: url('#polygon-clip-hexagon-big');">
+		      	<span style="color:#fff">Sharp Ratio</span>
+		      </div>
+		      <div class="off_pitch_page_hexagon_right" style="-webkit-clip-path: url('#polygon-clip-hexagon-big');clip-path: url('#polygon-clip-hexagon-big');">{{arrPerformance.SR || 0}}</div>
+		    </div>
+		    <div class="col-lg-2 col-md-2 col-sm-4 col-xs-12" style="height:100px;padding:0px">
+		      <div class="off_pitch_page_hexagon" style="-webkit-clip-path: url('#polygon-clip-hexagon-big');clip-path: url('#polygon-clip-hexagon-big');">
+		      	<span style="color:#fff">Total Trades</span>
+		      </div>
+		      <div class="off_pitch_page_hexagon_right" style="-webkit-clip-path: url('#polygon-clip-hexagon-big');clip-path: url('#polygon-clip-hexagon-big');">{{arrPerformance.totalTrades || 0}}</div>
+		    </div>
+		</div>
+
+
+
+		<div class="row" style="margin-top:15px">
+			<div class="col-xs-12 col-sm-1	col-md-1 col-lg-1">
+				<span style="color: #fff;padding-left: 15px;line-height: 30px;">Profit:</span>
+			</div>
+			<div class="col-xs-12 col-sm-11	col-md-11 col-lg-11">
+				<div class="funcButtons" class="col-xs-12 col-sm-12	col-md-11 col-lg-11">
+
+					<button type="button" class="btn btn-default button_default button_func" ng-class="{ 'func_button_active' : typeProfitChart == 'pips' }" ng-click="profitChart('pips',$event)">Pips</button>
+					<button type="button" class="btn btn-default button_default button_func" ng-class="{ 'func_button_active' : typeProfitChart == 'currency' }" ng-click="profitChart('currency',$event)">Euro</button>
+					<button type="button" class="btn btn-default button_default button_func" ng-class="{ 'func_button_active' : typeProfitChart == 'percentage' }" ng-click="profitChart('percentage',$event)">Percentage</button>
+					<button type="button" class="btn btn-default button_default button_func" ng-class="{ 'func_button_active' : typeProfitChart == 'dailyPips' }" ng-click="profitChart('dailyPips',$event)">Daily pips</button>
+					<button type="button" class="btn btn-default button_default button_func" ng-class="{ 'func_button_active' : typeProfitChart == 'dailyCurrency' }" ng-click="profitChart('dailyCurrency',$event)">Daily Euro</button>
+					<button type="button" class="btn btn-default button_default button_func" ng-class="{ 'func_button_active' : typeProfitChart == 'dailyPercentage' }" ng-click="profitChart('dailyPercentage',$event)">Daily Percentage</button>
+				  	
+				</div>
+			</div>
+		</div>
+		<!--<div class="col-xs-12 col-sm-12 col-md-12 col-lg-12" style="color:#fff;margin-top:15px">{{chart_title}}</div>-->
+		<div id="chart_profit" class="chart_c3 col-xs-12 col-sm-12 col-md-12 col-lg-12" style="height:300px;margin-top:15px"></div>
+
+
+
+		<div class="row btn-group btn-group-justified" style="height:120px;margin-top: 45px;">
+		    <div class="col-lg-2 col-md-2 col-sm-4 col-xs-12" style="height:100px;padding:0px">
+		      <div class="off_pitch_page_hexagon" style="-webkit-clip-path: url('#polygon-clip-hexagon-big');clip-path: url('#polygon-clip-hexagon-big');">
+		      	<span style="color:#fff">MaxDD pips</span>
+		      </div>
+		      <div class="off_pitch_page_hexagon_right" style="-webkit-clip-path: url('#polygon-clip-hexagon-big');clip-path: url('#polygon-clip-hexagon-big');">{{arrPerformance.maxDD_pips || 0}}</div>
+		    </div>
+		    <div class="col-lg-2 col-md-2 col-sm-4 col-xs-12" style="height:100px;padding:0px">
+		      <div class="off_pitch_page_hexagon" style="-webkit-clip-path: url('#polygon-clip-hexagon-big');clip-path: url('#polygon-clip-hexagon-big');">
+		      	<span style="color:#fff">MinDD pips</span>
+		      </div>
+		      <div class="off_pitch_page_hexagon_right" style="-webkit-clip-path: url('#polygon-clip-hexagon-big');clip-path: url('#polygon-clip-hexagon-big');">{{arrPerformance.minDD_pips || 0}}</div>
+		    </div>
+		    <div class="col-lg-2 col-md-2 col-sm-4 col-xs-12" style="height:100px;padding:0px">
+		      <div class="off_pitch_page_hexagon" style="-webkit-clip-path: url('#polygon-clip-hexagon-big');clip-path: url('#polygon-clip-hexagon-big');">
+		      	<span style="color:#fff">MaxDD %</span>
+		      </div>
+		      <div class="off_pitch_page_hexagon_right" style="-webkit-clip-path: url('#polygon-clip-hexagon-big');clip-path: url('#polygon-clip-hexagon-big');">{{arrPerformance.maxDD_perc || 0}}%</div>
+		    </div>
+		    <div class="col-lg-2 col-md-2 col-sm-4 col-xs-12" style="height:100px;padding:0px">
+		      <div class="off_pitch_page_hexagon" style="-webkit-clip-path: url('#polygon-clip-hexagon-big');clip-path: url('#polygon-clip-hexagon-big');">
+		      	<span style="color:#fff">MinDD %</span>
+		      </div>
+		      <div class="off_pitch_page_hexagon_right" style="-webkit-clip-path: url('#polygon-clip-hexagon-big');clip-path: url('#polygon-clip-hexagon-big');">{{arrPerformance.minDD_perc || 0}}%</div>
+		    </div>
+		    <div class="col-lg-2 col-md-2 col-sm-4 col-xs-12" style="height:100px;padding:0px">
+		      <div class="off_pitch_page_hexagon" style="-webkit-clip-path: url('#polygon-clip-hexagon-big');clip-path: url('#polygon-clip-hexagon-big');">
+		      	<span style="color:#fff;text-align: center;">maxDDD days</span>
+		      </div>
+		      <div class="off_pitch_page_hexagon_right" style="-webkit-clip-path: url('#polygon-clip-hexagon-big');clip-path: url('#polygon-clip-hexagon-big');">{{arrPerformance.maxDDD_days || 0}}</div>
+		    </div>
+		    <div class="col-lg-2 col-md-2 col-sm-4 col-xs-12" style="height:100px;padding:0px">
+		      <div class="off_pitch_page_hexagon" style="-webkit-clip-path: url('#polygon-clip-hexagon-big');clip-path: url('#polygon-clip-hexagon-big');">
+		      	<span style="color:#fff;text-align: center;">maxDDD op.</span>
+		      </div>
+		      <div class="off_pitch_page_hexagon_right" style="-webkit-clip-path: url('#polygon-clip-hexagon-big');clip-path: url('#polygon-clip-hexagon-big');">{{arrPerformance.maxDDD_nOper || 0}}</div>
+		    </div>
+		</div>
+
+
+
+		<div class="row" style="margin-top:15px">
+			<div class="col-xs-12 col-sm-1	col-md-1 col-lg-1">
+				<span style="color: #fff;padding-left: 15px;line-height: 30px;">Drawdown:</span>
+			</div>
+			<div class="col-xs-12 col-sm-11	col-md-11 col-lg-11">
+				<div class="funcButtons" class="col-xs-12 col-sm-12	col-md-11 col-lg-11">
+
+					<div type="button" class="btn btn-default button_default button_func" ng-class="{ 'func_button_active' : typeDrawDownChart == 'drawDownPips' }" ng-click="drawDownChart('drawDownPips',$event)">DrawDown Pips</div>
+					<div type="button" class="btn btn-default button_default button_func" ng-class="{ 'func_button_active' : typeDrawDownChart == 'drawDownPercentage' }" ng-click="drawDownChart('drawDownPercentage',$event)">DrawDown Percentage</div>
+
+				</div>
+			</div>
+		</div>
+		<!--<div class="col-xs-12 col-sm-12 col-md-12 col-lg-12" style="color:#fff;margin-top:15px">{{chart_title}}</div>-->
+		<div id="chart_drawdown" class="chart_c3 col-xs-12 col-sm-12 col-md-12 col-lg-12" style="height:300px;margin-top:15px"></div>
+
+
+	</div>
+
+</div>
+	

@@ -1,0 +1,51 @@
+gi
+Github
+--------------------------------------------------------------
+user:alericci
+psw: @scimmie83
+indirizzo Web repository:	https://github.com/symis84/Push_Forex_4.0
+https://github.com/symis84/Push_Forex_4.0.git
+
+commands Github:
+
+git pull			... da fare prima di iniziare a lavorare, sicronizza branch locale con il remoto
+git fetch			... sincronizza nomi dei branches
+
+git status 			... viasualizazzione status
+git diff   			... visualizza righe di codice modificate (le differenze)
+git add *  			... per condividere sul server dopo aver creato un nuovo file (li ricondivide tutti)
+git add --all			... aggiorna tutte le modifiche anche le eliminazioni 
+
+git commit -am "comment"	... per fare il commit cioe' la sicronizzazione con il server
+git push			... per rendere effettivo il commit (chiede psw)
+
+git checkout nomedelbranch	... per cambiare branch
+git reset --hard                ... per ritornare alla situazione pulita prima del commit rispetto al server
+
+per fare il pull avendo delle modifiche nn committate:
+git stash                       ... ti mette in una stage area le tue modifiche
+git pull
+git stash pop                   ... ti reinserisce le modifiche della stage area
+
+altrimenti pui usare il tool SourceTree
+
+quando ci sono modifiche sul server che nn hai sincronizzato mentre tu stai lavorando:
+git stash -> git pull -> git stash pop -> git commit -am "" -> git push
+
+
+recovery of Github
+-----------------------------------------------------------------
+Nel caso in cui vengano pushati file troppo grandi (>100Mb) o Git si blocchi per qualche motivo, questa e' la procedura per riallinearsi su develop:
+
+gitk --all		
+controlla i files che sono stati committati e non pushati
+salva questi files in una cartella backup
+git reset --hard HEAD
+git reset --hard origin/develop
+reinserisci i files salvati nel backup
+git add --all
+git commit -am "aligning to develop"
+git push
+
+
+------------------------------------------------------------------
