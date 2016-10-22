@@ -291,7 +291,9 @@ classdef coreState_real02 < handle
             if inversion <0 && devFluct2 > fluctLimit % I don't start if fluctuations are too small
                 obj.state=1;
                 obj.suggestedDirection=-newSign;
-                volatility = min(floor(wTP*devFluct2),maxSL);
+                volatility = min(floor(wTP*devFluct2),maxSL); % 100200 100201 100204 100205
+                % volatility = min(wTP*devFluct2,maxSL); % test: floor does not change the performance
+                % volatility = wTP*devFluct2; % 1002 THIS OBTAINED BETTER PERFORMANCE !!
                 obj.suggestedTP = volatility;
                 obj.suggestedSL = volatility;
             else

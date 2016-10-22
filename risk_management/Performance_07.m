@@ -392,7 +392,7 @@ classdef Performance_07 < handle
             [obj.drawDown_perc,obj.maxDD_perc,obj.minDD_perc,obj.aveDD_perc,~,~,~,~]=obj.DrawDown(obj.netReturns_perc);
             
             [name]=dateNameCreator(obj.period);
-            name2=strcat(name,'_',origin1_,'.mat');
+            name2=strcat(name,'_',nameAlgo_,'_',origin1_,'.mat');
             switch c
                 case 1
                     P_bktWeb1=obj; %#ok<NASGU>
@@ -437,7 +437,7 @@ classdef Performance_07 < handle
                 [obj.drawDown_perc,obj.maxDD_perc,obj.minDD_perc,obj.aveDD_perc,~,~,~,~]=obj.DrawDown(obj.netReturns_perc);
                 
                 [name]=dateNameCreator(obj.period);
-                name2=strcat(name,'_',origin2_,'.mat');
+                name2=strcat(name,'_',nameAlgo_,'_',origin2_,'.mat');
                 switch c
                     case 1
                         P_bktWeb2=obj; %#ok<NASGU>
