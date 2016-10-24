@@ -1,6 +1,6 @@
 function StartAlgoTest_2_0(varargin)
 
-
+display(sprintf('Close Position'));
 
 ListS = {{}};
 password = 'pushit2015';
@@ -15,6 +15,8 @@ socket = zmq.core.socket(context, 'ZMQ_SUB');
 contextPub = zmq.core.ctx_new();
 socket_pub = zmq.core.socket(contextPub, 'ZMQ_PUB');
 
+display(sprintf('1'));
+
 % SET SUBSCRIBE SOCKET
 port = str2num(varargin{2});
 add = strcat('tcp://',varargin{1},':%d');
@@ -25,7 +27,9 @@ portPub = str2num(varargin{3});
 addressPub = sprintf(add, portPub);
 zmq.core.connect(socket_pub, addressPub);
 
+display(sprintf('2'));
 pause(5);
+
 % SETTING TOPICS PUB AND SUB
 % EX: OPERATIONS@ACTIVTRADES@AUDCAD@9999  -->  PUB TOPIC
 % EX: TIMEFRAMEQUOTE@MT4@ACTIVTRADES@EURUSD@m1@v1  -->  SUB TOPIC
@@ -58,8 +62,10 @@ for k = 1:nVarargs
       zmq.core.setsockopt(socket, 'ZMQ_SUBSCRIBE', varargin{k});
   end
 end
+zmq.core.setsockopt(socket, 'ZMQ_SUBSCRIBE', 'BACKTESTFINISHED');
 
-while 1
+listen = true;
+while listen
     try
         message = char(zmq.core.recv(socket, 102400));
     catch ME
@@ -75,7 +81,9 @@ while 1
     isMember = any(ismember(ListS{1},message));
     if isMember == 1
         topicName = message;
+        display(sprintf('topic name: %s',topicName));
         messageBody = char(zmq.core.recv(socket, 102400));
+        display(sprintf('message body: %s',messageBody));
         [topicPub, messagePub]=onlineAlgoTest_client_backtest(topicName,messageBody,init);
         init = 0;
         if (~isempty( messagePub) && strcmp(messagePub,'') ==0)
@@ -88,14 +96,24 @@ while 1
             
         end
         
+    else
+        display(strcat('Message: ', messagePub));
+        listener1 = strcmp(message,'BACKTESTFINISHED');
+        if listener1 == 1
+            topicName = message;
+            messageBody = char(zmq.core.recv(socket, 102400));
+            display(sprintf('message body: %s',messageBody));
+            [topicPub, messagePub] = onlineAlgoTest_client_backtest(topicName,messageBody,init);
+            listen = false;
+        end
     end
 end
 zmq.core.disconnect(socket, address);
 zmq.core.close(socket);
 zmq.core.ctx_shutdown(context);
 zmq.core.ctx_term(context);
-zmq.core.disconnect(socket_pub, address);
-zmq.core.close(socket_pub);
+%zmq.core.disconnect(socket_pub, address);
+%zmq.core.close(socket_pub);
 zmq.core.ctx_shutdown(contextPub);
 zmq.core.ctx_term(contextPub);
 end

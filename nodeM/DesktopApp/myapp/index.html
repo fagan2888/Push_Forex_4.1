@@ -23,7 +23,8 @@
     <!--<script type="text/javascript" src="js/router/routes.js"></script>-->
 </head>
  
-<body id="app_container" ng-controller="homeCtrl" style="width: 850px; height: 490px;overflow:hidden">
+<body id="app_container" ng-controller="homeCtrl" style="width: 850px; height: 100%;overflow:hidden">
+    <div ng-if="!installationCheck" style="width:100%;height:100%;position:absolute;z-index:400;background-color:#ccc">Loading...</div>
     <div id="msg_cont_id" style="height:60px;width:100%">
       <div id="error_alert" class="alert alert-danger" role="alert"><strong>Error&nbsp;</strong>{{errorMsg}}</div>
       <div id="msg_alert" class="alert alert-info" role="alert">{{infoMsg}}
@@ -396,6 +397,26 @@
     </div>
 
 
+    <div id="container_backtest_list">
+      <table class="table">
+        <tr>
+          <th>Backtest</th>
+          <th>Type</th> 
+          <th>Action</th>
+        </tr>
+        <tr ng-repeat="data in activeWorker">
+          <td>{{$index}}</td>
+          <td>data.type</td> 
+          <td>
+            <button ng-click="stopBacktest($index)" class="btn btn-default" style="background-color: #272628;border-radius:0px;border:0px;color:#fff;height:38px;outline:0px">Stop/Delete</button>
+          </td>
+        </tr>
+      </table>
+    </div>  
+
+
+
+
     <div id="container_create_algo">
 
       <div class="create_algo_text">
@@ -568,6 +589,11 @@
         <li class="nav-li" ng-click="getPage('createAlgo')">
           <a style="color: #fff;text-decoration: none;" >
             <span class="font-bold" translate="" >Create</span> 
+          </a>
+        </li>
+        <li class="nav-li" ng-click="getPage('backtetsList')">
+          <a style="color: #fff;text-decoration: none;" >
+            <span class="font-bold" translate="" >Active Backtests</span> 
           </a>
         </li>
       </ul>

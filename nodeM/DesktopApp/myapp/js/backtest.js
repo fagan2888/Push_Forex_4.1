@@ -524,7 +524,7 @@ var CSVToArray = function( strData, strDelimiter ){
         arrData[ arrData.length - 1 ].push( strMatchedValue );
     }
     // Return the parsed data.
-    return( arrData );
+    return( arrData[0] );
 }
 
 var startToSendQuote = true;
@@ -541,6 +541,8 @@ var runningProviderRealTimeObjs = {};
 
 var platform = "";
 var brokerName = "";
+var algoId = "";
+var backtestType = "";
 //EX Setting: {cross:'EURUSD','dataLenght':'v1'},{cross:'EURGBP','dataLenght':'v10'}
 var setting = [];
 var indexQuote = 1;
@@ -636,6 +638,9 @@ var searchHistoryQuoteInDb = function(platform,source,cross,fromBacktest,toBackt
 	    }else{
 			console.log("end cursor");
 			console.log("runningProviderTimeFrameObjs: ",runningProviderTimeFrameObjs);
+
+			self.postMessage({'d':'ready','type':'backtestDataReady'});
+
 		}
 	}
 }
@@ -669,6 +674,8 @@ self.addEventListener('message',  function(event){
 
 	if (event.data.type == 'initialAlgoSetting') {
 
+		algoId = event.data.algoId;
+		backtestType = event.data.backtestType;
 		platform = event.data.platform;
 		brokerName = event.data.brokerName;
 
@@ -1442,8 +1449,10 @@ var sendNewDataToSignalProvider = function(indexQuoteInt){
 				
 		};	
 	};
+	console.log('countFinishBackTest.length: '+countFinishBackTest.length);
+	console.log('setting.length: '+setting.length);
 	if( countFinishBackTest.length == setting.length){
-
+		console.log('backtestFinished..');
 
 		if ( consecutive_loss_trades == 0 && consecutive_loss_trades_arr.length > 0) {
 			consecutive_loss_trades = consecutive_loss_trades_arr.length;
@@ -1478,7 +1487,9 @@ var sendNewDataToSignalProvider = function(indexQuoteInt){
 					'min_drawdown' : min_drawdown,
 					'operation_unique_id' : operation_unique_id 
 				},
-			'type':'backtestFinished'
+			'type':'backtestFinished',
+			'algoId': algoId,
+			'backtestType': backtestType
 			}
 		);
 	}

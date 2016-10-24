@@ -13,6 +13,7 @@ end
 persistent opTicket;
 listener1 = strcmp(topicSub,'TIMEFRAMEQUOTE@MT4@ACTIVTRADES@EURGBP@m1@v5');
 listener2 = strcmp(topicSub,'STATUS@EURGBP@9999');
+listener3 = strcmp(topicSub,'BACKTESTFINISHED');
 
 if listener1 == 1
     if r == 2
@@ -65,6 +66,10 @@ elseif listener2 == 1
     display('SKIP operation');
     topicPub = 'SKIP@ACTIVTRADES@EURGBP@9999';
     messagePub = 'SKIP';
+elseif listener3 == 1
+    display(sprintf('Backtest result: %s', messageSub));
+    topicPub = 'BACKTESTFINISHED';
+    messagePub = 'CLOSECONNECTIONS';
 end
 
 

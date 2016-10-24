@@ -2,6 +2,7 @@
     "name": "nwk-ngApp",
     "version": "0.0.1",
     "description": "An Angular node-webkit application",
+    "chromium-args" : "--disable-gpu",
     "main": "index.html",
     "private": true,
     "keywords": [

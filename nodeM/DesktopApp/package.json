@@ -6,6 +6,8 @@
   "dependencies": {
     "crypto": "",
     "fs": "",
+    "node-cmd":"", 
+    "q":"",
     "jsftp":"",
     "ftp":"",
     "tcp-port-used":"",

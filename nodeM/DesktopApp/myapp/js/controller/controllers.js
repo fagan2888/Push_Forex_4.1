@@ -2,11 +2,15 @@
 
 movieStubApp.controller("homeCtrl", function ($scope, $location) {
     
+    console.log("process.versions['node-webkit']: ",process.versions['node-webkit']);
+
     $scope.ipTempBetaServer = 'http://52.33.13.29:3000';
     //$scope.headerSrc = "tmpl/header.html";
     //$scope.movies = movieStubFactory.query();
     $scope.ipServer = "http://127.0.0.1:3000";
     //$scope.ipProdServer = "";
+    $scope.pub_port_client = '68998';
+    $scope.sub_port_client = '68909';
     $scope.ipProdServer = "http://127.0.0.1:3002";
     $scope.userName = 'Alessandro';
     $scope.password = 'p@ssword';
@@ -19,12 +23,17 @@ movieStubApp.controller("homeCtrl", function ($scope, $location) {
 
     $scope.zmq_dir_include = 'C:/PROGRA~1/ZEROMQ~1.4/include';
     $scope.zmq_dir_lib = 'C:/PROGRA~1/ZEROMQ~1.4/lib/';
-    $scope.zmq_lib = 'libzmq-v120-mt-4_0_4';  //for Visual Studio 2013
+    //for Visual Studio 2013. 
+    //THIS DLL PATH MUST BE THE SAME PATH ON THE SERVER OTHERWISE WHEN WE RUN THE EXE, THE EXE DOSNT FIND THE DLL
+    $scope.zmq_lib = 'C:/PROGRA~1/ZEROMQ~1.4/bin/libzmq-v120-mt-4_0_4';  
 
     //$domain = "/Applications/4Casters/";
     $scope.domain = "C:/4CastersApp/";
 
     var ncp = require('ncp').ncp;
+    var cmd = require('node-cmd');
+    var exec = require('child_process').exec;
+    var Q = require('q');
     var zmq = require('zmq');
     var fs = require("fs");
     var path = require('path');
@@ -34,6 +43,162 @@ movieStubApp.controller("homeCtrl", function ($scope, $location) {
     var mv = require('mv');
     require('nw.gui').Window.get().showDevTools();
     var tcpPortUsed = require('tcp-port-used');
+
+    $scope.installationCheck = false;
+    setTimeout(function(){
+
+      var execPath = process.cwd();
+
+      var checkZeroMQ = function(){
+        var deferred = Q.defer();
+        var zeroMqApp = "C:/PROGRA~1/ZEROMQ~1.4";
+        if(!fs.existsSync(zeroMqApp)){
+          console.log("zeroMq start");
+          var pathZeroMqInstallation = execPath + '/Libraries/ZeroMQ-4.0.4-miru1.0-x64.exe';
+          exec(pathZeroMqInstallation, function(err, data) {  
+            console.log('error to install zeromq: ',err)
+            console.log('error to install zeromq: ',data.toString());  
+            if (err == null) {
+              deferred.resolve(true);
+            }else{
+              deferred.reject(false);
+            }           
+          }); 
+        }else{
+          deferred.resolve(true);
+        }
+        return deferred.promise;
+      }
+
+      var checkChocolatey = function(){
+        var deferred = Q.defer();
+        var chocolateyApp = "C:/ProgramData/chocolatey";
+        if(!fs.existsSync(chocolateyApp)){
+          cmd.get(
+              execPath + '/Libraries/installChoco2.lnk',
+              function(data){
+                console.log('the current working dir is : ',data);
+                //var check = true;
+                //while(check){
+                //  if (fs.existsSync(chocolateyApp)) {
+                //    check = false;
+                    console.log("exit choco installation");
+                    deferred.resolve(true);
+                //  };
+                //}
+              }
+          );
+        }else{
+          deferred.resolve(true);
+        }
+        return deferred.promise;
+      }
+
+      var checkPython = function(){
+        var deferred = Q.defer();
+        //setTimeout(function(){
+          console.log("install Python");
+          var pythonApp = "C:/tools/python2";
+          if(!fs.existsSync(pythonApp)){
+            cmd.get(
+              execPath + '/Libraries/installPython2.lnk',
+              function(data){
+                console.log('the current working dir is : ',data);
+                //var check = true;
+                //while(check){
+                //  if (fs.existsSync(chocolateyApp)) {
+                //    check = false;
+                    console.log("exit python installation");
+                    deferred.resolve(true);
+                //  };
+                //}
+              }
+            );
+          }else{
+            deferred.resolve(true);
+          }
+        //},4000);
+        
+        return deferred.promise;
+      }
+
+      var checkVisualStudio2013 = function(){
+        var deferred = Q.defer();
+        //setTimeout(function(){
+          console.log("install VisualStudio2013");
+          var visualStudioApp = "C:/Program Files (x86)/Microsoft Visual Studio 12.0/VC/bin";
+          if(!fs.existsSync(visualStudioApp)){
+            cmd.get(
+              execPath + '/Libraries/installVisualStudio2013_2.lnk',
+              function(data){
+                console.log('the current working dir is : ',data);
+                //var check = true;
+                //while(check){
+                //  if (fs.existsSync(chocolateyApp)) {
+                //    check = false;
+                    console.log("exit VisualStudio2013 installation");
+                    deferred.resolve(true);
+                //  };
+                //}
+              }
+            );
+          }else{
+            console.log("visual studio installed");
+            deferred.resolve(true);
+          }
+        //},4000);
+        return deferred.promise;
+      }
+
+      var checkVisualStudioRedistributable2013 = function(){
+        var deferred = Q.defer();
+        //setTimeout(function(){
+          console.log("install VisualStudio2013Redistributable");
+          //var visualStudioApp = "C:/Program Files (x86)/Microsoft Visual Studio 12.0/VC/bin";
+          if(localStorage.checkVisualStudioRedistributable2013 != 'true'){
+            cmd.get(
+              execPath + '/Libraries/installVisualStudioRedistributable2013_2.lnk',
+              function(data){
+                console.log('the current working dir is : ',data);
+                //var check = true;
+                //while(check){
+                //  if (fs.existsSync(chocolateyApp)) {
+                //    check = false;
+                    console.log("exit VisualStudio2013Redistributable installation");
+                    localStorage.setItem('checkVisualStudioRedistributable2013', 'true');
+                    deferred.resolve(true);
+                //  };
+                //}
+              }
+            );
+          }else{
+            console.log("visual studio already installed");
+            deferred.resolve(true);
+          }
+        //},4000);
+        return deferred.promise;
+      }
+
+
+
+      Q.fcall(checkZeroMQ)
+      .then(checkChocolatey)
+      .then(checkPython)
+      //.then(checkVisualStudio2013)   //ADD THIS TASK ONLY IF THE USER CAN REBUILD THE MATLAB ZEROMQ LIBRARIES 
+      .then(checkVisualStudioRedistributable2013)
+      .catch(function (error) {
+          // Handle any error from all above steps 
+      })
+      .done(function (value4) {
+        $scope.installationCheck = true;
+        $scope.$digest();
+      });
+
+
+
+    },4000);
+    
+
 
     var Client = require('ftp');
     
@@ -156,9 +321,86 @@ movieStubApp.controller("homeCtrl", function ($scope, $location) {
 
 
 
-    $scope.activeWorker = [];
+    $scope.sockPubClient = '';
+    $scope.sockSubClient = '';
+    // OPEN AND SET ZMQ CHANNEL ON ONE SPECIFIC SOCKET
+    $scope.startBacktestFromClient = function(){
+      console.log("start zeromq for client algo execution");
+      if ( $scope.sockPubClient == '' && $scope.sockSubClient == '') {
+        $scope.sockPubClient = zmq.socket('pub');
+        $scope.sockSubClient = zmq.socket('sub');
+        $scope.sockPubClient.bindSync('tcp://*:'+$scope.pub_port_client);
+        $scope.sockSubClient.bindSync('tcp://*:'+$scope.sub_port_client);
+        
+        $scope.sockSubClient.subscribe('STARTBACKTESTFROMCLIENT');
+        // LISTEN ALL MESSAGES FROM SIGNAL PROVIDER AND REDIRECT ALL THE MESSAGE TO WORKER
+        $scope.sockSubClient.on('message', function() {
 
-    $scope.startBacktest = function(cross_list,from,to,platform,source){
+          console.log("message arrived");
+
+          var data = [];//messageSub.toString().split(" ");
+          Array.prototype.slice.call(arguments).forEach(function(arg) {
+              data.push(arg.toString());
+          });
+
+          console.log("message from signal provider: ",data);
+
+          if (data[0] == 'STARTBACKTESTFROMCLIENT') {
+            var arrData = data[1].split("@");
+
+            var platform = arrData[0];
+            var brokerName = arrData[1];
+            var fromDate = arrData[2];
+            var toDate = arrData[3];
+            var crossSetting = [];
+
+            var arrCross = data[1].split("$");
+            console.log("arrCross: ",arrCross);
+            arrCross.forEach(function(val,i){
+              if (i>0) {
+                valArr = val.split('@');
+                var crossName = valArr[0];
+                var timeFrame = valArr[1];
+                var dataLenght = valArr[2];
+                crossSetting.push({'cross':crossName,'timeFrame':timeFrame,'dataLenght':dataLenght});
+              };
+            });
+
+
+            console.log("cross list: ",crossSetting);
+            $scope.startBacktest( crossSetting, fromDate, toDate, platform, brokerName, 'backtestFromClient', null );
+
+          };
+
+          //data[0] --> STARTBACKTESTFROMCLIENT
+          //data[1] --> MT4@ACTIVTRADES@2016-01-20 13:47@2016-02-05 14:04$EURGBP@m1@v5$EURUSD@m5@v10$EURUSD@m15@v10
+
+          //console.log("start backtest");
+          //paramArr = [{'cross':'EURGBP','timeFrame':'m1','dataLenght':'v5'}];
+          //$scope.startBacktest( paramArr, '2016-01-20 13:47', '2016-02-05 14:04', 'MT4', 'ACTIVTRADES' );
+
+          //then:
+          //$scope.sockPubClient.send(['STARTBACKTEST','pubPort@subPort']);
+
+
+        });
+      }
+    }
+    $scope.startBacktestFromClient();
+
+
+    $scope.stopBacktest = function(index){
+      $scope.activeWorker[index].sockPub.close();
+      $scope.activeWorker[index].sockSub.close();
+      $scope.activeWorker[index].worker.terminate();
+    }
+
+
+    $scope.activeWorker = [];
+    $scope.startBacktest = function(cross_list,from,to,platform,source,backtestType,algoId){
+
+      //from --> matlab backtestFromClient
+      //from --> javascript console  backtestFromConsole
 
       var domain = "C:/4CastersApp/";
       if(!fs.existsSync(domain+"historyQuotes/")){
@@ -172,7 +414,9 @@ movieStubApp.controller("homeCtrl", function ($scope, $location) {
         sockPub: '',
         sockSub: '',
         pub_port: '',
-        sub_port: ''
+        sub_port: '',
+        type: backtestType,
+        algoId: algoId
       };
       var crosses_data = [];
       var ports_list = [];
@@ -183,7 +427,7 @@ movieStubApp.controller("homeCtrl", function ($scope, $location) {
 
         console.log("CREATE WORKER, crosses_data: ",crosses_data);
         
-        for(var i=1;i<=100;i++){
+        for(var i=1;i<=200;i++){
           ports_list.push(53650+i);
         }
        
@@ -203,6 +447,13 @@ movieStubApp.controller("homeCtrl", function ($scope, $location) {
                 checkPort(index);
               }else{
                 current_worker.sub_port = ports_list[j];
+
+
+                if (backtestType == 'backtestFromClient') {
+                  var portsData = current_worker.pub_port+"@"+current_worker.sub_port;
+                  $scope.sockPubClient.send(['STARTBACKTESTSETPORTS',portsData]);
+                };
+
 
                 var w;
                 if(typeof(Worker) !== "undefined") {
@@ -226,7 +477,7 @@ movieStubApp.controller("homeCtrl", function ($scope, $location) {
                   console.log("sending data to worker");
                   
                   setTimeout(function(){
-                    current_worker.worker.postMessage({'platform':platform,'brokerName':source,'type':'initialAlgoSetting'}); 
+                    current_worker.worker.postMessage({'platform':platform,'brokerName':source,'type':'initialAlgoSetting','algoId':$scope.dataCurrentAlgos["_id"], 'backtestType':backtestType}); 
                   },1000);
 
                   setTimeout(function(){
@@ -258,12 +509,78 @@ movieStubApp.controller("homeCtrl", function ($scope, $location) {
                       current_worker.sockSub.subscribe(event.data.d);
                     }else if (event.data.type == 'unsubscribe') {
                       current_worker.sockSub.unsubscribe(event.data.d);
+                    }else if (event.data.type == 'backtestDataReady') {
+                      $scope.sockPubClient.send(['BACKTESTDATAREADY','READY']);
                     }else if (event.data.type == 'backtestFinished') {
-                      console.log('backtestFinished: ',event.data.d);
-                      $scope.showBacktestResult(event.data.d);
-                      // finish backtest
-                      //send message to close matlab socket 
-                      current_worker.sockPub.send(['SYSTEMSTATUS','BACKTESTFINISHED']);
+                      console.log('backtestFinished: ',event.data);
+
+                      var closeSocketsAndWorker = function(){
+                        setTimeout(function(){
+                          var delElIndex = '';
+                          $scope.activeWorker.forEach(function(val,i){
+                            if (val.algoId == event.data.algoId) {
+                              console.log("Closing backtest sockets and worker... ");
+                              val.sockPub.close();
+                              val.sockSub.close();
+                              val.worker.terminate();
+                              delElIndex = i;
+                            };
+                          });
+                          $scope.activeWorker.splice(delElIndex, 1);
+
+                          //current_worker.sockPub.close();
+                          //current_worker.sockSub.close();
+                          //current_worker.worker.terminate();
+                          //current_worker = null;
+
+                        },1000);
+                      }
+                      
+
+                      $scope.saveBacktestResult = function(algoId,dataBacktest){
+
+                        storedb('algos').find({"_id":algoId},function(err,result){
+                          if(err == undefined || err == null || err == ""){ 
+                            
+                            var serverName = 'integrationTest';
+                            result[0][serverName].backtestResult = JSON.stringify(dataBacktest);
+                            result[0][serverName].backtestResult = JSON.parse(result[0][serverName].backtestResult);
+
+                            $scope.dataCurrentAlgos.integrationTest.backtestResult = result[0][serverName].backtestResult;
+
+                            var search = {'_id':algoId };
+                            var action2 = {};
+                            action2[serverName] = result[0][serverName];
+                            var query = {"$set" : action2};
+                            $scope.updateDb(search,query,function(result){
+                              if (result == true) { console.log("DB updated with backtest result") };
+                            });
+                            closeSocketsAndWorker();
+                          }
+                        });
+                      };
+
+                      if ( event.data.backtestType == 'backtestFromConsole' ){
+                        $scope.saveBacktestResult(event.data.algoId);
+                        if ( event.data.algoId == $scope.dataCurrentAlgos["_id"] && $scope.currentPage == 'backtetsList') {
+                          $scope.showBacktestResult(event.data.algoId,event.data.d);
+                        };
+                      }else{
+                        // finish backtest
+                        //send message to close matlab socket 
+                        
+                        var backtestResult = JSON.stringify(event.data.d);
+                        console.log("backtest from client: ",backtestResult);
+                        current_worker.sockPub.send(['BACKTESTFINISHED',backtestResult]);
+                        closeSocketsAndWorker();
+                      }
+
+
+                      //showBacktestAndIntegrationTest()
+
+
+
+                      
                     };
                   });
 
@@ -337,14 +654,14 @@ movieStubApp.controller("homeCtrl", function ($scope, $location) {
 
             request.onsuccess = function(event) {
               console.log("event: ",event);
-              console.log("event.target.result.value length: ",event.target.result);
+              console.log("event.target.result.value : ",event.target.result);
 
 
               var cursor = event.target.result;
               if (cursor) {
-                console.log("matchArrValues: ",request.result.value);
+                //console.log("matchArrValues: ",request.result.value);
 
-                if (request.result.value.source == source && request.result.value.platform == platform ) {
+                if (event.target.result.value.source == source && event.target.result.value.platform == platform ) {
                   foundRecord = 1;
 
 
@@ -469,12 +786,18 @@ movieStubApp.controller("homeCtrl", function ($scope, $location) {
 
 
                   var urlBeta = $scope.ipTempBetaServer+'/getHistoryQuote?historyName='+quotes_query_new;
-                  $scope.sendRequest(urlBeta, function (error, response, body) {
+                  //$scope.sendRequest(urlBeta, function (error, response, body) {
                     
-                    if (!error && response.statusCode == 200) {
+                    //if (!error && response.statusCode == 200) {
+
+// STUB HISTORY FROM SERVER///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////                      
+
+                      var body = '2016.01.20,13:47,0.77152,0.77166,0.77142,0.77166,254;2016.01.21,13:48,0.77166,0.77166,0.77145,0.77145,162;2016.01.22,13:49,0.77145,0.77187,0.77145,0.77186,420;2016.01.23,13:50,0.77186,0.77212,0.77186,0.77205,273;2016.01.24,13:51,0.77206,0.77211,0.77199,0.77207,169;2016.01.25,13:52,0.77207,0.77240,0.77197,0.77231,305;2016.01.26,13:53,0.77230,0.77254,0.77224,0.77251,216;2016.01.27,13:54,0.77252,0.77288,0.77251,0.77287,388;2016.01.28,13:54,0.77286,0.77288,0.77226,0.77245,486;2016.01.29,13:54,0.77245,0.77266,0.77241,0.77246,233;2016.01.30,13:54,0.77245,0.77247,0.77195,0.77217,441;2016.01.31,13:54,0.77217,0.77239,0.77217,0.77227,389;2016.02.01,13:54,0.77228,0.77251,0.77222,0.77223,420;2016.02.02,14:04,0.77224,0.77325,0.77223,0.77325,751;2016.02.03,14:04,0.77325,0.77337,0.77255,0.77260,612;2016.02.04,14:04,0.77260,0.77260,0.77243,0.77244,274;2016.02.05,14:04,0.77245,0.77257,0.77224,0.77243,382';
+
+
                       console.log("body: ",body);
-                      console.log("response: ",response);
-                      console.log("body.error: ",body.error);
+                      //console.log("response: ",response);
+                      //console.log("body.error: ",body.error);
 
                       store_history_in_memory = body;
                       body = null;
@@ -549,10 +872,10 @@ movieStubApp.controller("homeCtrl", function ($scope, $location) {
                           }
                         };
                       }
-                    }else{
-                      console.log("error: ",error);
-                    }
-                  });
+                    //}else{
+                    //  console.log("error: ",error);
+                    //}
+                  //});
 
 
 
@@ -641,7 +964,7 @@ movieStubApp.controller("homeCtrl", function ($scope, $location) {
             //TO CHANGE WHEN THE HISTORY SERVICE IS READY  
             console.log("start backtest");
             paramArr = [{'cross':'EURGBP','timeFrame':'m1','dataLenght':'v5'}];
-            $scope.startBacktest( paramArr, '2016-01-20 13:47', '2016-02-05 14:04', 'MT4', 'ACTIVTRADES' );
+            $scope.startBacktest( paramArr, '2016-01-20 13:47', '2016-02-05 14:04', 'MT4', 'ACTIVTRADES', 'backtestFromConsole', $scope.dataCurrentAlgos["_id"] );
           }
         });
 
@@ -650,21 +973,21 @@ movieStubApp.controller("homeCtrl", function ($scope, $location) {
     }
 
     // START BACKTEST EURGBP
-    //$scope.startBacktest([{'cross':'EURGBP','timeFrame':'m1','dataLenght':'v5'}],'2016-01-20 13:47','2016-02-05 14:04','MT4','ACTIVTRADES');
+    //$scope.startBacktest([{'cross':'EURGBP','timeFrame':'m1','dataLenght':'v5'}],'2016-01-20 13:47','2016-02-05 14:04','MT4','ACTIVTRADES' ,'backtestFromConsole' ,$scope.dataCurrentAlgos["_id"]);
 
     /*setTimeout(function(){
       console.log("second call");
-      $scope.startBacktest([{'cross':'EURGBP','timeFrame':'m1','dataLenght':'v5'}],'2016-01-25 13:47','2016-02-02 14:04','MT4','ACTIVTRADES');
+      $scope.startBacktest([{'cross':'EURGBP','timeFrame':'m1','dataLenght':'v5'}],'2016-01-25 13:47','2016-02-02 14:04','MT4','ACTIVTRADES' ,'backtestFromConsole', $scope.dataCurrentAlgos["_id"]);
     },30000);*/
 
     /*setTimeout(function(){
       console.log("second call");
-      $scope.startBacktest([{'cross':'EURGBP','timeFrame':'m1','dataLenght':'v5'}],'2016-01-10 13:47','2016-01-15 14:04','MT4','ACTIVTRADES');
+      $scope.startBacktest([{'cross':'EURGBP','timeFrame':'m1','dataLenght':'v5'}],'2016-01-10 13:47','2016-01-15 14:04','MT4','ACTIVTRADES' ,'backtestFromConsole', $scope.dataCurrentAlgos["_id"]);
     },30000);*/
 
     /*setTimeout(function(){
       console.log("second call");
-      $scope.startBacktest([{'cross':'EURGBP','timeFrame':'m1','dataLenght':'v5'}],'2016-01-10 13:47','2016-01-23 14:04','MT4','ACTIVTRADES');
+      $scope.startBacktest([{'cross':'EURGBP','timeFrame':'m1','dataLenght':'v5'}],'2016-01-10 13:47','2016-01-23 14:04','MT4','ACTIVTRADES', 'backtestFromConsole', $scope.dataCurrentAlgos["_id"]);
     },30000);*/
 
 
@@ -674,12 +997,12 @@ movieStubApp.controller("homeCtrl", function ($scope, $location) {
 
     /*setTimeout(function(){
       console.log("second call");
-      $scope.startBacktest([{'cross':'EURGBP','timeFrame':'m1','dataLenght':'v5'}],'2016-02-07 13:47','2016-02-15 14:04','MT4','ACTIVTRADES');
+      $scope.startBacktest([{'cross':'EURGBP','timeFrame':'m1','dataLenght':'v5'}],'2016-02-07 13:47','2016-02-15 14:04','MT4','ACTIVTRADES', 'backtestFromConsole', $scope.dataCurrentAlgos["_id"]);
     },30000);*/
 
     /*setTimeout(function(){
       console.log("second call");
-      $scope.startBacktest([{'cross':'EURGBP','timeFrame':'m1','dataLenght':'v5'}],'2016-02-01 13:47','2016-02-15 14:04','MT4','ACTIVTRADES');
+      $scope.startBacktest([{'cross':'EURGBP','timeFrame':'m1','dataLenght':'v5'}],'2016-02-01 13:47','2016-02-15 14:04','MT4','ACTIVTRADES', 'backtestFromConsole', $scope.dataCurrentAlgos["_id"]);
     },30000);*/
 
     //////////////////////////////Config panel//////////////////
@@ -930,7 +1253,8 @@ movieStubApp.controller("homeCtrl", function ($scope, $location) {
         actionStart: false,  //Running or Error
         actionStop: true,  //Stopped or Error
         actionSkipped: false,
-        param: "--" 
+        param: "--", 
+        backtestResult: ""
       },
       betaTest: {
         statusLabel: "ToDo",  //Error, Deploying, Deployed, Running, Stopped, 
@@ -1410,7 +1734,8 @@ movieStubApp.controller("homeCtrl", function ($scope, $location) {
               actionStart: false,  //Running or Error
               actionStop: true,  //Stopped or Error
               actionSkipped: false,
-              param: "--"  
+              param: "--",
+              backtestResult: ""  
             },
             betaTest: {
               statusLabel: "ToDo",  //Error, Deploying, Deployed, Running, Stopped, 
@@ -1518,7 +1843,8 @@ movieStubApp.controller("homeCtrl", function ($scope, $location) {
                                           actionStart: false,  //Running or Error
                                           actionStop: true,  //Stopped or Error
                                           actionSkipped: false,
-                                          param: "--"  
+                                          param: "--",
+                                          backtestResult: ""  
                                         },
                                         betaTest: {
                                           statusLabel: "ToDo",  //Error, Deploying, Deployed, Running, Stopped, 
@@ -1573,9 +1899,12 @@ movieStubApp.controller("homeCtrl", function ($scope, $location) {
 
 
 
+
+    $scope.currentAlgosIndex = '';
     $scope.selectAlgo = function(index){
       console.log("in select algo");
       console.log("$scope.dataAlgos[index]: ",$scope.dataAlgos[index]);
+      $scope.currentAlgosIndex = index;
       $scope.dataCurrentAlgos = $scope.dataAlgos[index];
       $scope.showAlgo = true;
       storedb('algos').find({"_id":$scope.dataCurrentAlgos["_id"]},function(err,result){
@@ -1765,6 +2094,10 @@ movieStubApp.controller("homeCtrl", function ($scope, $location) {
       }
     }
 
+
+    //THIS DOWNLOAD WILL INSTALL THE MATLAB VERSION WITH THE ZEROMQ DLL COMPILED WITH VISUAL STUDIO 2013. 
+    //SO TO RUN ZEROMQ ON MATLAB YOU NEED TO HAVE INSTALLED THE Visual StudiO Redistributable C++ 2013
+    //IF YOU WANT REBUILD THE MATLAB ZEROMQ DLL YOU NEED TO HAVE INSTALLED THE VISUAL STUDIO COMMUNITY OR PROFESSIONAL
     $scope.downloadAlgoTemplate = function(templateType){
 
       if (templateType == 'Matlab') {
@@ -1821,26 +2154,50 @@ movieStubApp.controller("homeCtrl", function ($scope, $location) {
     }
 
 
+    $scope.currentPage = '';
     $scope.getPage = function(page){
 
+      $scope.currentPage = page;
       if (page == 'setting') {
         $('#container').hide();
         $scope.backtestPage = false;
         $('#container_algo_backtest_detail').hide();
          $('#container_create_algo').hide();
+          $('#container_backtest_list').hide();
         $('container_algo_setting').show();
       }else if (page == 'algorithms') {
         $scope.backtestPage = false;
         $('#container_algo_backtest_detail').hide();
          $('#container_create_algo').hide();
         $('container_algo_setting').hide();
+         $('#container_backtest_list').hide();
         $('#container').show();
       }else if (page == 'createAlgo') {
         $scope.backtestPage = false;
         $('#container_algo_backtest_detail').hide();
         $('#container_algo_setting').hide();
         $('#container').hide();
+        $('#container_backtest_list').hide();
         $('#container_create_algo').show();
+      }else if (page == 'backtetsList') {
+        $scope.backtestPage = false;
+        $('#container_algo_backtest_detail').hide();
+        $('#container_algo_setting').hide();
+        $('#container').hide();
+        $('#container_create_algo').hide();
+        $('#container_backtest_list').show();
+
+
+        storedb('algos').find({"_id":$scope.dataCurrentAlgos["_id"]},function(err,result){
+          if(err == undefined || err == null || err == ""){ 
+            var serverName = 'integrationTest';
+            console.log( 'resultBacktest: ', result[0][serverName].backtestResult ); 
+            $scope.showBacktestResult(event.data.algoId,event.data.d);
+          }
+        });
+
+
+
       };
 
     }
