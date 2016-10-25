@@ -317,7 +317,7 @@ classdef Performance_07 < handle
         
         %% Function to calculate all the performance parameters
         
-        function obj=calcComparedPerformance(obj,nameAlgo_,origin1_,origin2_,cross_,freq_,transCost1_,transCost2_,initialStack_,leverage_,inputResultsMatrix1_,inputResultsMatrix2_,plotPerformance)
+        function obj = calcComparedPerformance(obj,nameAlgo_,origin1_,origin2_,cross_,freq_,transCost1_,transCost2_,initialStack_,leverage_,inputResultsMatrix1_,inputResultsMatrix2_,plotPerformance)
             
             %
             % DESCRIPTION:
@@ -392,20 +392,19 @@ classdef Performance_07 < handle
             [obj.drawDown_perc,obj.maxDD_perc,obj.minDD_perc,obj.aveDD_perc,~,~,~,~]=obj.DrawDown(obj.netReturns_perc);
             
             [name]=dateNameCreator(obj.period);
-            name2=strcat(name,'_',nameAlgo_,'_',origin1_,'.mat');
+            name1=strcat(name,'_',nameAlgo_,'_',origin1_,'.mat');
             switch c
                 case 1
                     P_bktWeb1=obj; %#ok<NASGU>
-                    save(name2,'P_bktWeb1')
+                    save(name1,'P_bktWeb1')
                 case 2
                     P_demo1=obj; %#ok<NASGU>
-                    save(name2,'P_demo1')
+                    save(name1,'P_demo1')
                 case 3
                     P_bkt1=obj; %#ok<NASGU>
-                    save(name2,'P_bkt1')
+                    save(name1,'P_bkt1')
             end
-            
-            
+                        
             if origin2_ ~= 0
                 
                 if strcmp(origin2_,'bktWeb')
