@@ -1262,7 +1262,7 @@ label{
 }
 
 .label_chart_class{
-  text-align: right;
+  width: 40px;
   height: 100%;
   line-height: 54px;
   color: #aeb0b0;

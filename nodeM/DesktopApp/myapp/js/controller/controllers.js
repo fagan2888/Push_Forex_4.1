@@ -21,6 +21,9 @@ movieStubApp.controller("homeCtrl", function ($scope, $location) {
     $scope.show_conf_app_panel = true;
     $scope.algo_conf_right_conf_algo = true;
 
+
+    $scope.srcpath = "C:/Program Files/MATLAB/MATLAB Compiler Runtime";
+    $scope.zmq_dir_bin = 'C:/Program Files/ZeroMQ 4.0.4/bin'
     $scope.zmq_dir_include = 'C:/PROGRA~1/ZEROMQ~1.4/include';
     $scope.zmq_dir_lib = 'C:/PROGRA~1/ZEROMQ~1.4/lib/';
     //for Visual Studio 2013. 
@@ -33,6 +36,8 @@ movieStubApp.controller("homeCtrl", function ($scope, $location) {
     var ncp = require('ncp').ncp;
     var cmd = require('node-cmd');
     var exec = require('child_process').exec;
+    var execFile = require('child_process').execFile;
+    var spawn = require('child_process').spawn;
     var Q = require('q');
     var zmq = require('zmq');
     var fs = require("fs");
@@ -397,10 +402,17 @@ movieStubApp.controller("homeCtrl", function ($scope, $location) {
 
 
     $scope.activeWorker = [];
-    $scope.startBacktest = function(cross_list,from,to,platform,source,backtestType,algoId){
+    $scope.showSummaryBacktest = true;
+    $scope.backtestingLoading = false;
+    $scope.startBacktest = function(cross_list,from,to,platform,source,backtestType,algoId,algoName){
 
       //from --> matlab backtestFromClient
       //from --> javascript console  backtestFromConsole
+      if (backtestType == 'backtestFromConsole') {
+        $('#backtest_chart').empty();
+        $scope.backtestingLoading = true;
+        $scope.showSummaryBacktest = false;
+      };
 
       var domain = "C:/4CastersApp/";
       if(!fs.existsSync(domain+"historyQuotes/")){
@@ -510,7 +522,81 @@ movieStubApp.controller("homeCtrl", function ($scope, $location) {
                     }else if (event.data.type == 'unsubscribe') {
                       current_worker.sockSub.unsubscribe(event.data.d);
                     }else if (event.data.type == 'backtestDataReady') {
-                      $scope.sockPubClient.send(['BACKTESTDATAREADY','READY']);
+
+
+                      if (backtestType == 'backtestFromClient') {
+                        $scope.sockPubClient.send(['BACKTESTDATAREADY','READY']);
+                      }else{
+                        var algoPathForExecution = $scope.domain+algoId+'/'+algoName;
+
+                        var bkCrossList = [];
+                        var fullParams = '';
+                        cross_list.forEach(function(val,i){
+                          var str;
+                          if( cross_list.indexOf(val.cross) > -1 ){
+                            str = ' TIMEFRAMEQUOTE@MT4@ACTIVTRADES@'+val.cross+'@'+val.timeFrame+'@'+val.dataLenght;
+                          }else{
+                            str = ' OPERATIONS@ACTIVTRADES@'+val.cross+'@9999 STATUS@'+val.cross+'@9999 TIMEFRAMEQUOTE@MT4@ACTIVTRADES@'+val.cross+'@'+val.timeFrame+'@'+val.dataLenght+' SKIP@ACTIVTRADES@'+val.cross+'@9999';
+                          }
+                          fullParams = fullParams + str;
+                        });
+                        var algoParamsForExecution = '127.0.0.1 '+current_worker.pub_port+' '+current_worker.sub_port+fullParams;
+                        console.log('algoPathForExecution: ',algoPathForExecution);
+                        console.log('algoParamsForExecution: ',algoParamsForExecution.split(' '));
+                        //cross_list[0].cross,cross_list[0].dataLenght,cross_list[0].timeFrame
+                        //127.0.0.1 PubPort SubPort
+                        //OPERATIONS@ACTIVTRADES@EURGBP@9999 
+                        //STATUS@EURGBP@9999 
+                        //TIMEFRAMEQUOTE@MT4@ACTIVTRADES@EURGBP@m1@v5 
+                        //SKIP@ACTIVTRADES@EURGBP@9999
+                        //IF ALGO IS MADE IN MATLAB
+
+                        var getDirectories = function(srcpath) {
+                          return fs.readdirSync(srcpath).filter(function(file) {
+                            return fs.statSync(path.join(srcpath, file)).isDirectory();
+                          });
+                        }
+
+                        var stringPathVar;
+                        var list;
+                        if(fs.existsSync($scope.srcpath)){
+                          list = getDirectories($scope.srcpath);
+                          console.log("list: ",list);
+                          list.forEach(function(val,i){
+                            var srcpath2 = $scope.srcpath + "/" +val +"/runtime/win64";  
+                            srcpath2 = srcpath2.replace(/\//g, '\\');
+                            console.log("srcpath2: ",srcpath2);
+                            list[i] = srcpath2;
+                          });
+                          list.push( process.env['PATH'] );
+
+                          var ZeroMQPathBin = $scope.zmq_dir_bin.replace(/\//g, '\\');
+                          list.push(ZeroMQPathBin);
+
+                          stringPathVar = list.join(';');
+                        }
+
+                        console.log("stringPathVar: ",stringPathVar);
+                        process.env['PATH'] = stringPathVar;
+                        var environment = process.env;  
+                        console.log("environment: ",environment);
+                        var config = {
+                            env: environment
+                        };
+                        console.log("config: ",config);
+                        console.log('process.env[PATH]: ',process.env['PATH']);
+                        execFile(algoPathForExecution,  algoParamsForExecution.split(' '), config, function(data){
+                            console.log("algoPathForExecution: ",algoPathForExecution);
+                            console.log('the current working dir is : ',data);
+                            console.log(" start algo");
+                        });
+                        
+                        //IF MATLAB
+
+
+                      }
+                      
+
                     }else if (event.data.type == 'backtestFinished') {
                       console.log('backtestFinished: ',event.data);
 
@@ -543,8 +629,10 @@ movieStubApp.controller("homeCtrl", function ($scope, $location) {
                           if(err == undefined || err == null || err == ""){ 
                             
                             var serverName = 'integrationTest';
-                            result[0][serverName].backtestResult = JSON.stringify(dataBacktest);
-                            result[0][serverName].backtestResult = JSON.parse(result[0][serverName].backtestResult);
+                            console.log('result: ',result);
+                            result[0][serverName].backtestResult = dataBacktest;
+                            console.log('result: ',result[0][serverName]);
+                            //result[0][serverName].backtestResult = JSON.parse(result[0][serverName].backtestResult);
 
                             $scope.dataCurrentAlgos.integrationTest.backtestResult = result[0][serverName].backtestResult;
 
@@ -561,9 +649,16 @@ movieStubApp.controller("homeCtrl", function ($scope, $location) {
                       };
 
                       if ( event.data.backtestType == 'backtestFromConsole' ){
-                        $scope.saveBacktestResult(event.data.algoId);
-                        if ( event.data.algoId == $scope.dataCurrentAlgos["_id"] && $scope.currentPage == 'backtetsList') {
-                          $scope.showBacktestResult(event.data.algoId,event.data.d);
+                        $scope.saveBacktestResult(event.data.algoId,event.data.d);
+                        console.log("event.data.algoId: ",event.data.algoId);
+                        console.log("$scope.dataCurrentAlgos[_id]: ",$scope.dataCurrentAlgos["_id"]);
+                        console.log("$scope.currentPage: ",$scope.currentPage);
+                        if ( event.data.algoId == $scope.dataCurrentAlgos["_id"] && $scope.currentPage == 'backtestPage') {
+                          //$('#backtest_chart').empty();
+                          $scope.backtestingLoading = false;
+                          $scope.showSummaryBacktest = true;
+                          $scope.$digest();
+                          $scope.showBacktestResult(event.data.algoId,$scope.dataCurrentAlgos["algoName"],event.data.d);
                         };
                       }else{
                         // finish backtest
@@ -964,7 +1059,7 @@ movieStubApp.controller("homeCtrl", function ($scope, $location) {
             //TO CHANGE WHEN THE HISTORY SERVICE IS READY  
             console.log("start backtest");
             paramArr = [{'cross':'EURGBP','timeFrame':'m1','dataLenght':'v5'}];
-            $scope.startBacktest( paramArr, '2016-01-20 13:47', '2016-02-05 14:04', 'MT4', 'ACTIVTRADES', 'backtestFromConsole', $scope.dataCurrentAlgos["_id"] );
+            $scope.startBacktest( paramArr, '2016-01-20 13:47', '2016-02-05 14:04', 'MT4', 'ACTIVTRADES', 'backtestFromConsole', $scope.dataCurrentAlgos["_id"], $scope.dataCurrentAlgos["algoName"] );
           }
         });
 
@@ -2162,15 +2257,15 @@ movieStubApp.controller("homeCtrl", function ($scope, $location) {
         $('#container').hide();
         $scope.backtestPage = false;
         $('#container_algo_backtest_detail').hide();
-         $('#container_create_algo').hide();
-          $('#container_backtest_list').hide();
-        $('container_algo_setting').show();
+        $('#container_create_algo').hide();
+        $('#container_backtest_list').hide();
+        $('#container_algo_setting').show();
       }else if (page == 'algorithms') {
         $scope.backtestPage = false;
         $('#container_algo_backtest_detail').hide();
-         $('#container_create_algo').hide();
-        $('container_algo_setting').hide();
-         $('#container_backtest_list').hide();
+        $('#container_create_algo').hide();
+        $('#container_algo_setting').hide();
+        $('#container_backtest_list').hide();
         $('#container').show();
       }else if (page == 'createAlgo') {
         $scope.backtestPage = false;
@@ -2179,25 +2274,28 @@ movieStubApp.controller("homeCtrl", function ($scope, $location) {
         $('#container').hide();
         $('#container_backtest_list').hide();
         $('#container_create_algo').show();
-      }else if (page == 'backtetsList') {
+      }else if (page == 'backtestList') {
         $scope.backtestPage = false;
         $('#container_algo_backtest_detail').hide();
         $('#container_algo_setting').hide();
         $('#container').hide();
         $('#container_create_algo').hide();
         $('#container_backtest_list').show();
-
-
+      }else if (page == 'backtestPage') {
+        $('#backtest_chart').empty();
+        //$scope.backtestPage = true;
+        //$('#container_algo_backtest_detail').hide();
+        //$('#container_algo_setting').hide();
+        //$('#container').hide();
+        //$('#container_create_algo').hide();
+        //$('#container_backtest_list').hide();
         storedb('algos').find({"_id":$scope.dataCurrentAlgos["_id"]},function(err,result){
           if(err == undefined || err == null || err == ""){ 
             var serverName = 'integrationTest';
             console.log( 'resultBacktest: ', result[0][serverName].backtestResult ); 
-            $scope.showBacktestResult(event.data.algoId,event.data.d);
+            $scope.showBacktestResult(result[0].algoId,result[0].algoName,result[0][serverName].backtestResult);
           }
         });
-
-
-
       };
 
     }
@@ -2220,9 +2318,11 @@ movieStubApp.controller("homeCtrl", function ($scope, $location) {
     }
 
 
-    $scope.showBacktestResult = function(objResult){
+    $scope.showBacktestResult = function(algoId,algoName,objResult){
 
       console.log("objResult: ",objResult);
+      console.log("algoId: ",algoId);
+      console.log("algoName: ",algoName);
      
       var cumulativeChart = ['Cumulative'];
       cumulativeChart = cumulativeChart.concat( objResult.tot_backtest_comulative );
@@ -2234,7 +2334,7 @@ movieStubApp.controller("homeCtrl", function ($scope, $location) {
             right:20
         },
         size: {
-          height: 300
+          height: 260
         },
         data: {
             columns: [
@@ -2636,7 +2736,6 @@ movieStubApp.controller("homeCtrl", function ($scope, $location) {
       $(".algo_conf_right_conf_app").css( "top", "41px" );
 
       $('#container').hide();
-      $('#container_algo_backtest_detail').hide();
       $('container_algo_setting').hide();
       $('#container_algo_backtest_detail').show();
 
@@ -2749,7 +2848,10 @@ movieStubApp.controller("homeCtrl", function ($scope, $location) {
             return '';
           }
 
-          $scope.$digest();
+          
+          $scope.getPage('backtestPage');
+          //$scope.currentPage = 'backtestList';
+          //$scope.$digest();
 
         //},2000);
       //});

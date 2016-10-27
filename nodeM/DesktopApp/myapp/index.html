@@ -312,43 +312,51 @@
     <div id="container_algo_backtest_detail">
 
 
+      <div class="create_algo_text" style="background-color: #313032">
+        Run and Share your Backtest with your team
+      </div>
+      <div class="row" style="margin-left:0px;margin-right:0px;height:10%">
 
-       <div class="row" style="margin-left:0px;margin-right:0px;height:10%">
-
-        <div class="col-md-6 col-lg-6 col-xs-6" style="padding-right:0px">
+        <div class="" style="width:100%;padding-left:10px">
           <div class="col-md-6 col-lg-6 col-xs-6 label_chart_class">From:</div>
-          <div class="col-md-6 col-lg-6 col-xs-6" style="margin-top:11px">
+          <div class="col-md-4 col-lg-4 col-xs-4" style="margin-top:11px">
             <p class="input-group">
-              <input id="inputStart" style="border-radius:0px;border:1px solid #000;outline: none" type="text" class="form-control" uib-datepicker-popup="dd-MMMM-yyyy" ng-model="inputStartValue" is-open="popup1.opened" datepicker-options="dateOptions" ng-required="true" close-text="Close" alt-input-formats="altInputFormats" />
+              <input id="inputStart" style="border-radius:0px;border:1px solid #000;outline: none;background-color: #424345!important;color:#fff; -webkit-box-shadow: none;box-shadow: none;" type="text" class="form-control" uib-datepicker-popup="dd-MMMM-yyyy" ng-model="inputStartValue" is-open="popup1.opened" datepicker-options="dateOptions" ng-required="true" close-text="Close" alt-input-formats="altInputFormats" />
               <span id="inputStartSpan" class="input-group-btn" style="outline: none">
-                <button id="inputStartButton" style="height:34px;border:1px solid #151515" type="button" class="btn btn-default" ng-click="open1()"><i class="glyphicon glyphicon-calendar"></i></button>
+                <button id="inputStartButton" style="height:34px;border:1px solid #151515;background-color: #424345!important;color:#000" type="button" class="btn btn-default" ng-click="open1()"><i class="glyphicon glyphicon-calendar"></i></button>
               </span>
             </p>
           </div>
-        </div>
+        <!--</div>-->
 
-        <div class="col-md-6 col-lg-6 col-xs-6" style="padding-left;">
+        <!--<div class="" style="width:400px;padding-left:10px">-->
           <div class="col-md-1 col-lg-1 col-xs-1 label_chart_class" style="text-align:left">To:</div>
-          <div class="col-md-6 col-lg-6 col-xs-6" style="margin-top:11px;padding-left:5px">
+          <div class="col-md-4 col-lg-4 col-xs-4" style="margin-top:11px;padding-left:5px">
             <p class="input-group">
-              <input style="border-radius:0px;border:1px solid #000" type="text" class="form-control" uib-datepicker-popup="dd-MMMM-yyyy" ng-model="inputStopValue" is-open="popup2.opened" datepicker-options="dateOptions" ng-required="true" close-text="Close" />
+              <input style="border-radius:0px;border:1px solid #000;outline: none;background-color: #424345!important;color:#fff; -webkit-box-shadow: none;box-shadow: none;" type="text" class="form-control" uib-datepicker-popup="dd-MMMM-yyyy" ng-model="inputStopValue" is-open="popup2.opened" datepicker-options="dateOptions" ng-required="true" close-text="Close" />
               <span id="inputStopSpan" class="input-group-btn">
-                <button id="inputStopButton" style="height:34px;border:1px solid #000" type="button" class="btn btn-default" ng-click="open2()"><i class="glyphicon glyphicon-calendar"></i></button>
+                <button id="inputStopButton" style="height:34px;border:1px solid #151515;background-color: #424345!important;color:#000" type="button" class="btn btn-default" ng-click="open2()"><i class="glyphicon glyphicon-calendar"></i></button>
               </span>
             </p>
           </div>
-          <div class="col-md-5 col-lg-5 col-xs-5" style="margin-top:11px">
+          <div class="col-md-2 col-lg-2 col-xs-2" style="margin-top:11px">
             <button ng-click="initBacktest()"  class="btn btn-default" style="background-color: #000;border-radius:0px;border:0px;width:69px;color:#fff;height:33px;font-size:14px;outline:0px">Start</button>
           </div>
         </div>
       </div>
 
-
-      <div class="row" style="margin-left:0px;margin-right:0px">
-        <div id="backtest_chart" class="col-xs-12 col-sm-12 col-md-12 col-lg-12" style="height:55%;padding:0px">
+      <div class="row" ng-if="backtestingLoading" style="margin-left:0px;margin-right:0px">
+        <div class="col-xs-12 col-sm-12 col-md-12 col-lg-12" style="height:100%;padding-top: 106px;padding-left: 392px">
+          <img src="img/preloader9.gif" style="height:60px">
         </div>
       </div>
-      <div class="row" style="margin-left:0px;margin-right:0px;height:45%;">
+
+
+      <div class="row" style="margin-left:0px;margin-right:0px">
+        <div id="backtest_chart" class="col-xs-12 col-sm-12 col-md-12 col-lg-12" style="height:47%;padding:0px">
+        </div>
+      </div>
+      <div class="row" ng-show="showSummaryBacktest" style="margin-left:0px;margin-right:0px;height:45%;">
         <div class="btn-group btn-group-justified" style="margin-top:10px">
 
           <div class="btn" style="height:100px;padding:0px;cursor: default;">
@@ -591,7 +599,7 @@
             <span class="font-bold" translate="" >Create</span> 
           </a>
         </li>
-        <li class="nav-li" ng-click="getPage('backtetsList')">
+        <li class="nav-li" ng-click="getPage('backtestList')">
           <a style="color: #fff;text-decoration: none;" >
             <span class="font-bold" translate="" >Active Backtests</span> 
           </a>

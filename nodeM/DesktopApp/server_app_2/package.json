@@ -1,13 +1,14 @@
 {
   "name": "server_app",
   "version": "1.0.0",
-  "description": "",
+  "description": "server",
   "main": "app.js",
+  "private": true,
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "author": "",
-  "license": "ISC",
+  "author": "simone",
+  "license": "MIT",
   "dependencies": {
     "express": "^4.13.3",
     "nedb": "^1.5.0",
