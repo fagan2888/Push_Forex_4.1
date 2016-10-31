@@ -546,10 +546,13 @@ var backtestType = "";
 //EX Setting: {cross:'EURUSD','dataLenght':'v1'},{cross:'EURGBP','dataLenght':'v10'}
 var setting = [];
 var indexQuote = 1;
+var historyLength = 0;
 
 
 var updateTimeFrameObjLocal = function(messageArr,i){
 
+	historyLength++;
+	console.log("historyLength: ",historyLength);
 	//console.log("updateRealTimeQuotesObj messageArr: ",messageArr);
 	var result = QuotesModule.updateRealTimeQuotesObj(searchObjRealTimeQuote,messageArr);
 
@@ -639,7 +642,7 @@ var searchHistoryQuoteInDb = function(platform,source,cross,fromBacktest,toBackt
 			console.log("end cursor");
 			console.log("runningProviderTimeFrameObjs: ",runningProviderTimeFrameObjs);
 
-			self.postMessage({'d':'ready','type':'backtestDataReady'});
+			self.postMessage({'d':historyLength,'type':'backtestDataReady'});
 
 		}
 	}

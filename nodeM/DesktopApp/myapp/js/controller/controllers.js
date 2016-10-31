@@ -412,6 +412,7 @@ movieStubApp.controller("homeCtrl", function ($scope, $location) {
         $('#backtest_chart').empty();
         $scope.backtestingLoading = true;
         $scope.showSummaryBacktest = false;
+        $scope.backtestProgress = 0;
       };
 
       var domain = "C:/4CastersApp/";
@@ -428,7 +429,10 @@ movieStubApp.controller("homeCtrl", function ($scope, $location) {
         pub_port: '',
         sub_port: '',
         type: backtestType,
-        algoId: algoId
+        algoId: algoId,
+        historyLength: '',
+        progress: '',
+        progressPercentage: 0
       };
       var crosses_data = [];
       var ports_list = [];
@@ -513,7 +517,32 @@ movieStubApp.controller("homeCtrl", function ($scope, $location) {
                   current_worker.worker.addEventListener('message',  function(event){
                     if ( event.data.type == 'sendQuoteToSignalProvider' ) {
                       console.log("sendQuoteToSignalProvider: ",event.data.d);
-                      current_worker.sockPub.send(event.data.d);
+
+                      //setTimeout(function(){
+
+                        current_worker.sockPub.send(event.data.d);
+
+                        console.log("current_worker.progress: ",current_worker.progress);
+                        console.log("current_worker.historyLength: ",current_worker.historyLength);
+
+                        current_worker.progress++;
+                        current_worker.progressPercentage = ((current_worker.progress / current_worker.historyLength) *100).toFixed(1);
+
+                        console.log("current_worker.progressPercentage: ",current_worker.progressPercentage);
+
+                        $scope.activeWorker.forEach(function(val,i){
+                          if ($scope.dataCurrentAlgos != null || $scope.dataCurrentAlgos != undefined) {
+                            if (val.algoId == $scope.dataCurrentAlgos["_id"]) {
+                              console.log("Updating backtest progress... ");
+                              $scope.backtestProgress = current_worker.progressPercentage;
+                              val.progressPercentage = current_worker.progressPercentage;
+                              $scope.$digest();
+                            };
+                          }
+                        });
+
+                      //},2000);
+                      
                     }else if (event.data.type == 'sendStatusToSignalProvider') {
                       console.log("sendStatusToSignalProvider...",event.data.d);
                       current_worker.sockPub.send(event.data.d);
@@ -523,6 +552,8 @@ movieStubApp.controller("homeCtrl", function ($scope, $location) {
                       current_worker.sockSub.unsubscribe(event.data.d);
                     }else if (event.data.type == 'backtestDataReady') {
 
+                      current_worker.historyLength = event.data.d;
+                      current_worker.progress = 0;
 
                       if (backtestType == 'backtestFromClient') {
                         $scope.sockPubClient.send(['BACKTESTDATAREADY','READY']);
@@ -604,14 +635,27 @@ movieStubApp.controller("homeCtrl", function ($scope, $location) {
                         setTimeout(function(){
                           var delElIndex = '';
                           $scope.activeWorker.forEach(function(val,i){
+
+                            if ($scope.dataCurrentAlgos != null || $scope.dataCurrentAlgos != undefined) {
+                              if (val.algoId == $scope.dataCurrentAlgos["_id"]) {
+                                val.progressPercentage = 100;
+                                $scope.backtestProgress = val.progressPercentage;
+                                console.log("$scope.backtestProgress: ",$scope.backtestProgress);
+                                $scope.$digest();
+                              }
+                            }
+
                             if (val.algoId == event.data.algoId) {
                               console.log("Closing backtest sockets and worker... ");
                               val.sockPub.close();
                               val.sockSub.close();
                               val.worker.terminate();
                               delElIndex = i;
+                              
                             };
                           });
+
+                          
                           $scope.activeWorker.splice(delElIndex, 1);
 
                           //current_worker.sockPub.close();
