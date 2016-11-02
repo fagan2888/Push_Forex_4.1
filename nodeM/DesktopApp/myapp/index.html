@@ -409,7 +409,44 @@
 
 
     <div id="container_backtest_list">
-      <table class="table">
+
+      <div class="list-group">
+        <!--<a ng-repeat="data in activeWorker" href="#" class="list-group-item">-->
+        <uib-accordion close-others="oneAtATime">
+          <div ng-repeat="data in activeWorker" uib-accordion-group class="panel-default" ng-click="
+            statusAccordion.open[$index] ? statusAccordion.open[$index] = true : statusAccordion.open[$index] = false"
+              is-open="statusAccordion.open[$index]">
+            <uib-accordion-heading>
+              <table class="table algoBacktestList">
+                <tr>
+                  <td>{{$index+1}}.</td>
+                  <td>{{data.algoName}}</td> 
+                  <td>{{ getBacktestType(data.type)  }}</td>
+                  <td>{{data.progressPercentage}}%</td>
+                  <td style="text-align:center">
+                    <button ng-click="stopBacktest($index)" class="btn btn-default" style="background-color: #000;border-radius:0px;border:0px;color:#fff;height:38px;outline:0px">Stop/Delete</button>
+                  </td>
+                </tr>
+              </table/>
+                <!--<i class="pull-right glyphicon" ng-class="{'glyphicon-chevron-down': status.isCustomHeaderOpen, 'glyphicon-chevron-right': !status.isCustomHeaderOpen}"></i>-->
+            </uib-accordion-heading>
+            <div>
+              <table class="table algoBacktestList">
+                <tr>
+                  <td width="25%" style="text-align: center">Profit:&nbsp;{{data.partialResult.d.profit}}pips</td>
+                  <td width="25%" style="text-align: center">Loss:&nbsp;{{data.partialResult.d.loss}}pips</td> 
+                  <td width="25%" style="text-align: center">Profit Trades:&nbsp;{{data.partialResult.d.profit_trades}}</td>
+                  <td width="25%" style="text-align: center">Loss Trades:&nbsp;{{data.partialResult.d.loss_trades}}</td>
+                </tr>
+              </table/>
+            </div>
+          </div>
+
+        </uib-accordion>
+      </div>
+
+
+      <!--<table class="table">
         <tr>
           <th>Backtest</th>
           <th>Type</th> 
@@ -417,12 +454,12 @@
         </tr>
         <tr ng-repeat="data in activeWorker">
           <td>{{$index}}</td>
-          <td>data.type</td> 
+          <td>{{data.type}}</td> 
           <td>
             <button ng-click="stopBacktest($index)" class="btn btn-default" style="background-color: #272628;border-radius:0px;border:0px;color:#fff;height:38px;outline:0px">Stop/Delete</button>
           </td>
         </tr>
-      </table>
+      </table>-->
     </div>  
 
 

@@ -223,6 +223,12 @@ movieStubApp.controller("homeCtrl", function ($scope, $location) {
         }
     });
 
+    $scope.statusAccordion = {
+      isFirstOpen: true,
+      oneAtATime: true,
+      open: []
+    };
+
     $scope.cross_list = [
       'AUDNZD',
       'AUDCAD',
@@ -400,6 +406,14 @@ movieStubApp.controller("homeCtrl", function ($scope, $location) {
       $scope.activeWorker[index].worker.terminate();
     }
 
+    $scope.getBacktestType = function(type){
+      if(type=='backtestFromConsole'){
+        return 'Backtest from Console'; 
+      }else{
+        return 'Backtest from Client';
+      } 
+    }
+
 
     $scope.activeWorker = [];
     $scope.showSummaryBacktest = true;
@@ -430,10 +444,13 @@ movieStubApp.controller("homeCtrl", function ($scope, $location) {
         sub_port: '',
         type: backtestType,
         algoId: algoId,
+        algoName: '',
         historyLength: '',
         progress: '',
-        progressPercentage: 0
+        progressPercentage: 0,
+        partialResult: ''
       };
+      current_worker.algoName = $scope.dataCurrentAlgos["algoName"];
       var crosses_data = [];
       var ports_list = [];
       var pub_port_set = false;
@@ -518,7 +535,10 @@ movieStubApp.controller("homeCtrl", function ($scope, $location) {
                     if ( event.data.type == 'sendQuoteToSignalProvider' ) {
                       console.log("sendQuoteToSignalProvider: ",event.data.d);
 
-                      //setTimeout(function(){
+                      setTimeout(function(){
+
+
+                        current_worker.partialResult = event.data.partialResult;
 
                         current_worker.sockPub.send(event.data.d);
 
@@ -536,12 +556,13 @@ movieStubApp.controller("homeCtrl", function ($scope, $location) {
                               console.log("Updating backtest progress... ");
                               $scope.backtestProgress = current_worker.progressPercentage;
                               val.progressPercentage = current_worker.progressPercentage;
+                              val.partialResult = current_worker.partialResult;
                               $scope.$digest();
                             };
                           }
                         });
 
-                      //},2000);
+                      },5000);
                       
                     }else if (event.data.type == 'sendStatusToSignalProvider') {
                       console.log("sendStatusToSignalProvider...",event.data.d);
@@ -2333,13 +2354,30 @@ movieStubApp.controller("homeCtrl", function ($scope, $location) {
         //$('#container').hide();
         //$('#container_create_algo').hide();
         //$('#container_backtest_list').hide();
-        storedb('algos').find({"_id":$scope.dataCurrentAlgos["_id"]},function(err,result){
-          if(err == undefined || err == null || err == ""){ 
-            var serverName = 'integrationTest';
-            console.log( 'resultBacktest: ', result[0][serverName].backtestResult ); 
-            $scope.showBacktestResult(result[0].algoId,result[0].algoName,result[0][serverName].backtestResult);
+        var foundBacktestRunning = false;
+        $scope.activeWorker.forEach(function(val,i){
+          if ($scope.dataCurrentAlgos != null || $scope.dataCurrentAlgos != undefined) {
+            if (val.algoId == $scope.dataCurrentAlgos["_id"]) {
+              foundBacktestRunning = true;
+              console.log("Updating backtest progress... ");
+              $scope.backtestingLoading = true;
+              $scope.showSummaryBacktest = false;
+              $scope.backtestProgress = val.progressPercentage;
+              $scope.$digest();
+            };
           }
         });
+
+        if (!foundBacktestRunning) {
+          storedb('algos').find({"_id":$scope.dataCurrentAlgos["_id"]},function(err,result){
+            if(err == undefined || err == null || err == ""){ 
+              var serverName = 'integrationTest';
+              console.log( 'resultBacktest: ', result[0][serverName].backtestResult ); 
+              $scope.showBacktestResult(result[0].algoId,result[0].algoName,result[0][serverName].backtestResult);
+            }
+          });
+        };
+
       };
 
     }

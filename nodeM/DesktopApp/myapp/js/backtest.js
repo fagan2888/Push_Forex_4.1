@@ -1281,6 +1281,51 @@ var sendNewDataToSignalProvider = function(indexQuoteInt){
 	console.log("checkM1: "+ checkM1 );
 	//{'cross':event.data.d[j].cross,'dataLenght':event.data.d[j].dataLenght}
 
+
+	var getPartialResult = function(){
+		if ( consecutive_loss_trades == 0 && consecutive_loss_trades_arr.length > 0) {
+			consecutive_loss_trades = consecutive_loss_trades_arr.length;
+		};
+		if ( consecutive_profit_trades == 0 && consecutive_profit_trades_arr.length > 0) {
+			consecutive_profit_trades = consecutive_profit_trades_arr.length;
+		};
+
+		var partialResult = 
+		{'d': 
+			{
+				'operations':operations, 
+				'tot_backtest_comulative': tot_backtest_comulative,
+				'tot_backtest_all_operations' : tot_backtest_all_operations,
+				'profit' : profit,
+				'loss' : loss,
+				'profit_trades' : profit_trades,
+				'loss_trades' : loss_trades,
+				'total_profit' : total_profit,
+				'average_pips_trade' : average_pips_trade,
+				'consecutive_profit_trades_arr': consecutive_profit_trades_arr,
+				'consecutive_loss_trades_arr' : consecutive_loss_trades_arr,
+				'consecutive_profit_trades' : consecutive_profit_trades,
+				'consecutive_loss_trades' : consecutive_loss_trades,
+				'worst_trade': worst_trade,
+				'best_trade' : best_trade,
+				'long_trades' : long_trades,
+				'short_trades' : short_trades,
+				'max_drawdown_arr' : max_drawdown_arr,
+				'max_drawdown' : max_drawdown,
+				'max_drawdown_from_zero' : max_drawdown_from_zero,
+				'min_drawdown' : min_drawdown,
+				'operation_unique_id' : operation_unique_id 
+			},
+			'type':'backtestPartialResult',
+			'algoId': algoId,
+			'backtestType': backtestType
+		};
+		return partialResult;
+	}
+
+
+	var partialResultForApp = getPartialResult();
+
 	timeFrameArr = [];
 	for(var i=0; i<=setting.length-1; i++){
 		timeFrameArr.pushUnique(setting[i].cross);
@@ -1302,7 +1347,7 @@ var sendNewDataToSignalProvider = function(indexQuoteInt){
 							var topicToSignalProvider = "TIMEFRAMEQUOTE@"+platform+"@"+brokerName+"@"+setting[i].cross+"@"+timeFrame+"@"+setting[i].dataLenght;
 							console.log("topicToSignalProvider: ",topicToSignalProvider);
 							console.log("quotesToSignalProvider: ",quote.join(";") );
-							self.postMessage({'d':[topicToSignalProvider, quote.join(";")],'type':'sendQuoteToSignalProvider'});
+							self.postMessage({'d':[topicToSignalProvider, quote.join(";")],'type':'sendQuoteToSignalProvider','partialResult':partialResultForApp});
 							//sockPub.send([topicToSignalProvider, quote.join(";")]);
 						}else{
 							countFinishBackTest.push(setting[i].cross+setting[i].timeFrame+setting[i].dataLenght);
@@ -1322,7 +1367,7 @@ var sendNewDataToSignalProvider = function(indexQuoteInt){
 							//"TIMEFRAMEQUOTE@MT4@ACTIVTRADES   +     @EURUSD     +     @m1     +    @v1 
 							//"TIMEFRAMEQUOTE@BACKTEST@BACKTEST
 							var topicToSignalProvider = "TIMEFRAMEQUOTE@"+platform+"@"+brokerName+"@"+setting[i].cross+"@"+timeFrame+"@"+setting[i].dataLenght;
-							self.postMessage({'d':[topicToSignalProvider, quote.join(";")],'type':'sendQuoteToSignalProvider'});
+							self.postMessage({'d':[topicToSignalProvider, quote.join(";")],'type':'sendQuoteToSignalProvider','partialResult':partialResultForApp});
 							//sockPub.send([topicToSignalProvider, quote.join(";")]);
 						}else{
 							countFinishBackTest.push(setting[i].cross+setting[i].timeFrame+setting[i].dataLenght);
@@ -1342,7 +1387,7 @@ var sendNewDataToSignalProvider = function(indexQuoteInt){
 							//"TIMEFRAMEQUOTE@MT4@ACTIVTRADES   +     @EURUSD     +     @m1     +    @v1 
 							//"TIMEFRAMEQUOTE@BACKTEST@BACKTEST
 							var topicToSignalProvider = "TIMEFRAMEQUOTE@"+platform+"@"+brokerName+"@"+setting[i].cross+"@"+timeFrame+"@"+setting[i].dataLenght;
-							self.postMessage({'d':[topicToSignalProvider, quote.join(";")],'type':'sendQuoteToSignalProvider'});
+							self.postMessage({'d':[topicToSignalProvider, quote.join(";")],'type':'sendQuoteToSignalProvider','partialResult':partialResultForApp});
 							//sockPub.send([topicToSignalProvider, quote.join(";")]);
 						}else{
 							countFinishBackTest.push(setting[i].cross+setting[i].timeFrame+setting[i].dataLenght);
@@ -1362,7 +1407,7 @@ var sendNewDataToSignalProvider = function(indexQuoteInt){
 							//"TIMEFRAMEQUOTE@MT4@ACTIVTRADES   +     @EURUSD     +     @m1     +    @v1 
 							//"TIMEFRAMEQUOTE@BACKTEST@BACKTEST
 							var topicToSignalProvider = "TIMEFRAMEQUOTE@"+platform+"@"+brokerName+"@"+setting[i].cross+"@"+timeFrame+"@"+setting[i].dataLenght;
-							self.postMessage({'d':[topicToSignalProvider, quote.join(";")],'type':'sendQuoteToSignalProvider'});
+							self.postMessage({'d':[topicToSignalProvider, quote.join(";")],'type':'sendQuoteToSignalProvider','partialResult':partialResultForApp});
 							//sockPub.send([topicToSignalProvider, quote.join(";")]);
 						}else{
 							countFinishBackTest.push(setting[i].cross+setting[i].timeFrame+setting[i].dataLenght);
@@ -1382,7 +1427,7 @@ var sendNewDataToSignalProvider = function(indexQuoteInt){
 							//"TIMEFRAMEQUOTE@MT4@ACTIVTRADES   +     @EURUSD     +     @m1     +    @v1 
 							//"TIMEFRAMEQUOTE@BACKTEST@BACKTEST
 							var topicToSignalProvider = "TIMEFRAMEQUOTE@"+platform+"@"+brokerName+"@"+setting[i].cross+"@"+timeFrame+"@"+setting[i].dataLenght;
-							self.postMessage({'d':[topicToSignalProvider, quote.join(";")],'type':'sendQuoteToSignalProvider'});
+							self.postMessage({'d':[topicToSignalProvider, quote.join(";")],'type':'sendQuoteToSignalProvider','partialResult':partialResultForApp});
 							//sockPub.send([topicToSignalProvider, quote.join(";")]);
 						}else{
 							countFinishBackTest.push(setting[i].cross+setting[i].timeFrame+setting[i].dataLenght);
@@ -1402,7 +1447,7 @@ var sendNewDataToSignalProvider = function(indexQuoteInt){
 							//"TIMEFRAMEQUOTE@MT4@ACTIVTRADES   +     @EURUSD     +     @m1     +    @v1 
 							//"TIMEFRAMEQUOTE@BACKTEST@BACKTEST
 							var topicToSignalProvider = "TIMEFRAMEQUOTE@"+platform+"@"+brokerName+"@"+setting[i].cross+"@"+timeFrame+"@"+setting[i].dataLenght;
-							self.postMessage({'d':[topicToSignalProvider, quote.join(";")],'type':'sendQuoteToSignalProvider'});
+							self.postMessage({'d':[topicToSignalProvider, quote.join(";")],'type':'sendQuoteToSignalProvider','partialResult':partialResultForApp});
 							//sockPub.send([topicToSignalProvider, quote.join(";")]);
 						}else{
 							countFinishBackTest.push(setting[i].cross+setting[i].timeFrame+setting[i].dataLenght);
@@ -1422,7 +1467,7 @@ var sendNewDataToSignalProvider = function(indexQuoteInt){
 							//"TIMEFRAMEQUOTE@MT4@ACTIVTRADES   +     @EURUSD     +     @m1     +    @v1 
 							//"TIMEFRAMEQUOTE@BACKTEST@BACKTEST
 							var topicToSignalProvider = "TIMEFRAMEQUOTE@"+platform+"@"+brokerName+"@"+setting[i].cross+"@"+timeFrame+"@"+setting[i].dataLenght;
-							self.postMessage({'d':[topicToSignalProvider, quote.join(";")],'type':'sendQuoteToSignalProvider'});
+							self.postMessage({'d':[topicToSignalProvider, quote.join(";")],'type':'sendQuoteToSignalProvider','partialResult':partialResultForApp});
 							//sockPub.send([topicToSignalProvider, quote.join(";")]);
 						}else{
 							countFinishBackTest.push(setting[i].cross+setting[i].timeFrame+setting[i].dataLenght);
@@ -1442,7 +1487,7 @@ var sendNewDataToSignalProvider = function(indexQuoteInt){
 							//"TIMEFRAMEQUOTE@MT4@ACTIVTRADES   +     @EURUSD     +     @m1     +    @v1 
 							//"TIMEFRAMEQUOTE@BACKTEST@BACKTEST
 							var topicToSignalProvider = "TIMEFRAMEQUOTE@"+platform+"@"+brokerName+"@"+setting[i].cross+"@"+timeFrame+"@"+setting[i].dataLenght;
-							self.postMessage({'d':[topicToSignalProvider, quote.join(";")],'type':'sendQuoteToSignalProvider'});
+							self.postMessage({'d':[topicToSignalProvider, quote.join(";")],'type':'sendQuoteToSignalProvider','partialResult':partialResultForApp});
 							//sockPub.send([topicToSignalProvider, quote.join(";")]);
 						}else{
 							countFinishBackTest.push(setting[i].cross+setting[i].timeFrame+setting[i].dataLenght);
