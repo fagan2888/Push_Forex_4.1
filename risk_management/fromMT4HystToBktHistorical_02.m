@@ -1,10 +1,15 @@
-function [HistData_1min,HistData_freq]=fromMT4HystToBktHistorical_02(actTimeScale,newTimeScale,Fullname)
+function [HistData_1min,HistData_freq]=fromMT4HystToBktHistorical_02(actTimeScale,newTimeScale,histName)
 
 %
 % DESCRIPTION:
 % -------------------------------------------------------------
-% this function reformat the hystorical data from MT4 to a standard format
-% used in the bkt.
+% this function reformat the historical data from MT4 to a standard format
+% used in the bkt. 
+%
+% WARNINGS:
+% -------------------------------------------------------------
+% DO NOT SAVE THE HISTORICAL DATA INTO A FOLDER WITH A
+% NAME CONTAINING SPACES and DOTS !!!!
 %
 % INPUT parameters:
 % -------------------------------------------------------------
@@ -19,10 +24,11 @@ function [HistData_1min,HistData_freq]=fromMT4HystToBktHistorical_02(actTimeScal
 
 tic
 
-factor = 10000;
+%factor = 10000;
+factor = 1;
 
 format long
-fileID = fopen(Fullname);
+fileID = fopen(histName);
 hystorical = textscan(fileID,'%s %s %f %f %f %f %f','Delimiter',',');
 
 expert=TimeSeriesExpert_11;
@@ -49,10 +55,11 @@ HistData_freq(:,4)=expert.closeVrescaled;
 HistData_freq(:,5)=expert.volrescaled;
 HistData_freq(:,6)=expert.openDrescaled;
 
-suffix = '_ForBkt';
-splittedName = strsplit(Fullname,'.');
+splittedName = strsplit(histName,'.');
 name = splittedName{1};
-savingName = strcat(name,suffix,'.csv');
+savingName = strcat(name,'.csv');
+% suffix = '_ForBkt';
+% savingName = strcat(name,suffix,'.csv');
 % dlmwrite(savingName, HistData_1min, '-append','precision','%.3f%.1f%.1f%.1f%f%.10f') ;
 
 fileID = fopen(savingName,'w');

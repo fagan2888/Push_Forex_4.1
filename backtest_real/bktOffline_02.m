@@ -244,8 +244,10 @@ classdef bktOffline_02 < handle
             obj.outputBktOffline(:,11) = minimumReturns;             % minimum return touched during dingle operation
 
             if calcPerformance == 1;
-                p = Performance_07;
-                obj.performance = p.calcSinglePerformance(nameAlgo,'bktWeb',histName,Cross,newTimeScale,transCost,initialStack,Leverage,obj.outputBktOffline,plotPerformance);
+                p = Performance_08;
+                obj.performance = p.calcSinglePerformance('bktWeb',parameters,obj.outputBktOffline);
+                % p = Performance_07;
+                %obj.performance = p.calcSinglePerformance(nameAlgo,'bktWeb',histName,Cross,newTimeScale,transCost,initialStack,Leverage,obj.outputBktOffline,plotPerformance);
             end
             if calcPerDistribution == 1;
                 pD = PerformanceDistribution_05;

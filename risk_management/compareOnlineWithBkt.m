@@ -1,43 +1,67 @@
 
-function [OperationsOnline,OperationsBkt,PerformanceOnline,PerformanceBkt,HistData_1min,HistData_freq]=compareOnlineWithBkt
+function [OperationsOnline,OperationsBkt,PerformanceOnline,PerformanceBkt,HistData_1min,HistData_freq]=compareOnlineWithBkt(FullnameOrServername,parameters)
 
-AlgoMagicNumber = 100804;
-AlgoName = strcat('Algo','_',num2str(AlgoMagicNumber));
-cross =  'EURUSD';
-histName = 'MT4';
-transCost = 1;
-initialStack = 10000;
-leverage = 10;
-actTimeScale = 1;
-newTimeScale = 30;
-% DateStart = '09/19/2016 19:30';
-% FullnameOrServername = 'C:\Users\alericci\Desktop\Forex 4.0 noShared\test exe\1002\serverTest_19102016.csv';
-FullnameOrServername = 'ServerTest';
-Histfilename = 'EURUSD_01082016_Algo1002';
-Histfiledir = 'C:\Users\alericci\Desktop\Forex 4.0 noShared\performance comparison\19102016\';
-HistFullname  = strcat(Histfiledir, Histfilename,'.csv');
-AlgoParamsFile = 'parameters_Offline_Algo_100804_invertedSupertrend_EURUSD.txt';
-plotPerformance = 1;
+%
+% DESCRIPTION:
+% -------------------------------------------------------------
+% This function compares the perfromance of a specified Algo obtained by
+% the DEMO system the BKT or REAL.
+% Before to running it modify the Algo parameter file please.
+% 
+% WARNINGS:
+% -------------------------------------------------------------
+% % DO NOT SAVE THE HISTORICAL DATA INTO A FOLDER WITH A
+% NAME CONTAINING SPACES and DOTS !!!!
+% 
+% INPUT parameters:
+% -------------------------------------------------------------
+% FullnameOrServername  ... the name of the server origin for dowloading the operations executed by the Algo: 'ServerTest' or
+%                           'ServerProd' or the path of the dowloaded '../operations.csv'
+% parameters            ... parameter file containing all the information of the specified Algo and the historical data for the BKT 
+%
+% OUTPUT parameters:
+% -------------------------------------------------------------
+% OperationsOnline      ... operations performed by the Algo online
+% OperationsBkt         ... operations performed by the Algo in BKT
+% PerformanceOnline     ... performance of the Algo calculated on OperationsOnline
+% PerformanceBkt        ... performance of the Algo calculated on OperationsBkt
+% HistData_1min         ... historical data at 1 min (actTimeScale)
+% HistData_freq         ... historical data at the newTimeScale
+%
+% EXAMPLE of use:
+% -------------------------------------------------------------
+% [OperationsOnline,OperationsBkt,PerformanceOnline,PerformanceBkt,HistData_1min,HistData_freq]=compareOnlineWithBkt('ServerTest','parameters_Offline_Algo_100804_invertedSupertrend_EURUSD.txt')
+%
+
+fid=fopen(parameters);
+C = textscan(fid, '%s', 'Delimiter', '', 'CommentStyle', '%');
+fclose(fid);
+cellfun(@eval, C{1});
 
 
 % --------- start function ----------- %
 [OperationsOnline]=fromWebPageToMatrix_02(AlgoMagicNumber,newTimeScale,FullnameOrServername);
 
-[HistData_1min,HistData_freq]=fromMT4HystToBktHistorical_02(actTimeScale,newTimeScale,HistFullname);
+[HistData_1min,HistData_freq]=fromMT4HystToBktHistorical_02(actTimeScale,newTimeScale,histName);
 
 bkt_Algo = bktOffline_02;
-bkt_Algo = bkt_Algo.spin(AlgoParamsFile);
+bkt_Algo = bkt_Algo.spin(parameters);
 OperationsBkt = bkt_Algo.outputBktOffline;
 
-PerformanceBkt = Performance_07;
-PerformanceBkt = PerformanceBkt.calcSinglePerformance(AlgoName,'bktWeb',histName,cross,newTimeScale,transCost,initialStack,leverage,OperationsBkt,plotPerformance);
-PerformanceOnline = Performance_07;
-PerformanceOnline = PerformanceOnline.calcSinglePerformance(AlgoName,'demo',histName,cross,newTimeScale,0,initialStack,leverage,OperationsOnline,plotPerformance);
+PerformanceBkt = Performance_08;
+PerformanceBkt = PerformanceBkt.calcSinglePerformance('BKT',parameters,OperationsBkt);
+PerformanceOnline = Performance_08;
+PerformanceOnline = PerformanceOnline.calcSinglePerformance('DEMO',parameters,OperationsOnline);
 
 
-% 
-% 
-%date_1002_online(:,1)=cellstr(datestr(Algo1002_19082016_19102016(:,7), 'mm/dd/yyyy HH:MM'));
+
+% DateStart = '09/19/2016 19:30';
+% FullnameOrServername = 'C:\Users\alericci\Desktop\Forex 4.0 noShared\test exe\1002\serverTest_19102016.csv';
+% Histfilename = 'EURUSD_01082016_Algo1002';
+% Histfiledir = 'C:\Users\alericci\Desktop\Forex 4.0 noShared\performance comparison\19102016\';
+% HistFullname  = strcat(Histfiledir, Histfilename,'.csv');
+
+% date_1002_online(:,1)=cellstr(datestr(Algo1002_19082016_19102016(:,7), 'mm/dd/yyyy HH:MM'));
 % date_1002_online(:,2)=cellstr(datestr(Algo1002_19082016_19102016(:,8), 'mm/dd/yyyy HH:MM'));
 % date_1002_bkt(:,2)=cellstr(datestr(bkt_Algo_1002.outputBktOffline(:,8), 'mm/dd/yyyy HH:MM'));
 % date_1002_bkt(:,1)=cellstr(datestr(bkt_Algo_1002.outputBktOffline(:,7), 'mm/dd/yyyy HH:MM'));
@@ -45,7 +69,7 @@ PerformanceOnline = PerformanceOnline.calcSinglePerformance(AlgoName,'demo',hist
 % d30str = cellstr(d30)
 
 % [OnlineOperations]=fromWebPageToMatrix_02(100804,30,'ServerTest');
-% 
+%
 % Algo1002_19082016_19102016=Algo1002_19102016(77:end,:);
 
 % P1002=Performance_07;
