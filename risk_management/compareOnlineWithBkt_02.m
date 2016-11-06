@@ -1,5 +1,5 @@
 
-function [OperationsOnline,OperationsBkt,PerformanceOnline,PerformanceBkt,HistData_1min,HistData_freq]=compareOnlineWithBkt(FullnameOrServername,parameters)
+function [OperationsOnline,OperationsBkt,PerformanceOnline,PerformanceBkt,HistData_1min,HistData_freq]=compareOnlineWithBkt_02(FullnameOrServername,histDataFormat,parameters)
 
 %
 % DESCRIPTION:
@@ -10,15 +10,16 @@ function [OperationsOnline,OperationsBkt,PerformanceOnline,PerformanceBkt,HistDa
 % 
 % WARNINGS:
 % -------------------------------------------------------------
-% % DO NOT SAVE THE HISTORICAL DATA INTO A FOLDER WITH A
+% 1) DO NOT SAVE THE HISTORICAL DATA INTO A FOLDER WITH A
 % NAME CONTAINING SPACES and DOTS !!!!
+% 2) please set in parameters: calcPerformance = 0; calcPerDistribution = 0; !!!
 % 
 % INPUT parameters:
 % -------------------------------------------------------------
 % FullnameOrServername  ... the name of the server origin for dowloading the operations executed by the Algo: 'ServerTest' or
 %                           'ServerProd' or the path of the dowloaded '../operations.csv'
 % parameters            ... parameter file containing all the information of the specified Algo and the historical data for the BKT 
-%
+%                           
 % OUTPUT parameters:
 % -------------------------------------------------------------
 % OperationsOnline      ... operations performed by the Algo online
@@ -30,8 +31,18 @@ function [OperationsOnline,OperationsBkt,PerformanceOnline,PerformanceBkt,HistDa
 %
 % EXAMPLE of use:
 % -------------------------------------------------------------
-% [OperationsOnline,OperationsBkt,PerformanceOnline,PerformanceBkt,HistData_1min,HistData_freq]=compareOnlineWithBkt('ServerTest','parameters_Offline_Algo_100804_invertedSupertrend_EURUSD.txt')
+% [OperationsOnline,OperationsBkt,PerformanceOnline,PerformanceBkt,HistData_1min,HistData_freq]=compareOnlineWithBkt_02('ServerTest','standard','parameters_Offline_Algo_100804_invertedSupertrend_EURUSD.txt');
 %
+
+if strcmp(histDataFormat,'standard')
+    c=1;
+elseif strcmp(histDataFormat,'MT4')
+    c=2;
+else
+    h=msgbox('please indicate as histDataFormat: standard or MT4','WARN','warn');
+    waitfor(h)
+    return
+end
 
 fid=fopen(parameters);
 C = textscan(fid, '%s', 'Delimiter', '', 'CommentStyle', '%');
@@ -40,14 +51,21 @@ cellfun(@eval, C{1});
 
 
 % --------- start function ----------- %
-[OperationsOnline]=fromWebPageToMatrix_02(AlgoMagicNumber,newTimeScale,FullnameOrServername);
+[OperationsOnline]=fromWebOperToMatrix_02(AlgoMagicNumber,newTimeScale,FullnameOrServername);
 
-[HistData_1min,HistData_freq]=fromMT4HystToBktHistorical_02(actTimeScale,newTimeScale,histName);
+switch c
+    case 1
+        display('Historical Data with standard format');
+    case 2
+        display('Historical Data with MT4 format ... reformatting');
+        [~,~]=fromMT4HystToBktHistorical_02(actTimeScale,newTimeScale,histName);
+end
 
 bkt_Algo = bktOffline_02;
 bkt_Algo = bkt_Algo.spin(parameters);
+HistData_1min = bkt_Algo.starthisData;
+HistData_freq = bkt_Algo.newHisData;
 OperationsBkt = bkt_Algo.outputBktOffline;
-
 
 PerformanceBkt = Performance_08;
 PerformanceBkt = PerformanceBkt.calcSinglePerformance('BKT',parameters,OperationsBkt);
@@ -57,8 +75,12 @@ PerformanceOnline = PerformanceOnline.calcSinglePerformance('DEMO',parameters,Op
 
 
 % 
-% HistData_1min = bkt_Algo.starthisData;
-% HistData_freq = bkt_Algo.newHisData;
+
+
+% fileID = fopen('scan1.dat');
+% dates = textscan(fileID,'%s %*[^\n]');
+% fclose(fileID);
+% dates{1}
 
 % try 
 %    D = datenum(Inpt,'dd mmm yyyy HH:MM:SS.FFF')

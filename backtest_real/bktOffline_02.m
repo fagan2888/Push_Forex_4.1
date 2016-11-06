@@ -72,6 +72,8 @@ classdef bktOffline_02 < handle
             
             algo = str2func(nameAlgo);
             
+            display('Prepearing for Bkt ...');
+            
             obj.nData=nData_;
             
             [histData, newHistData] = load_historical_02(histName, actTimeScale, newTimeScale);

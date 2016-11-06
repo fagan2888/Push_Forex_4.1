@@ -260,7 +260,7 @@ classdef Performance_08 < handle
             % INPUT parameters:
             % -------------------------------------------------------------
             % nameAlgo             ... name of the tested Algo
-            % origin               ... origin of the results (ex: bktWeb, demo, bkt)
+            % origin               ... origin of the results (ex: BKT, DEMO, REAL)
             % cross                ... cross considered (ex: EURUSD)
             % freq                 ... frequency of data used (ex: 5 mins)
             % transCost            ... transaction cost (spread)
@@ -294,12 +294,22 @@ classdef Performance_08 < handle
                         
             colour='r';
             
+            if strcmp(origin,'BKT')
+                obj.transCost=transCostBkt;
+            elseif strcmp(origin,'DEMO') || strcmp(origin,'REAL')
+                obj.transCost=transCostOnline;
+            else
+                h=msgbox('please indicate as Operations origin: BKT, DEMO or REAL','WARN','warn');
+                waitfor(h)
+                return
+            end
+            
+            
             obj.nameAlgo=nameAlgo; %#ok<*CPROP>
             obj.origin=origin;
             obj.histName=histName;
             obj.cross=Cross;
             obj.freq=newTimeScale;
-            obj.transCost=transCost;
             obj.initialStack=initialStack;
             obj.leverage=Leverage;
             obj=obj.SharpeRatio(colour,plotPerformance);
@@ -329,7 +339,7 @@ classdef Performance_08 < handle
             % b) adjust the historical data using the function fromMT4HystToBktHistorical
             % c) calculate the "bkt" results using bktOffline_02, they will
             % be saved in inputResultsMatrix1_  (bkt_Algo_002.outputBktOffline)
-            % c) dowload "demo" results and run fromWebPageToMatrix and then save them into inputResultsMatrix2_
+            % c) dowload "demo" results and run fromWebOperToMatrix and then save them into inputResultsMatrix2_
             %
             % INPUT parameters:
             % -------------------------------------------------------------

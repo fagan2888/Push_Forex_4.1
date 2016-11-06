@@ -1,4 +1,4 @@
-function [outputWP]=fromWebPageToMatrix(AlgoMagicNumber,newTimeScale, Fullname)
+function [outputWP]=fromWebOperToMatrix(AlgoMagicNumber,newTimeScale, Fullname)
 
 %%% ATTENTION:
 % the input Demo .csv is in a standard format

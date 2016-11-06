@@ -24,8 +24,8 @@ function [HistData_1min,HistData_freq]=fromMT4HystToBktHistorical_02(actTimeScal
 
 tic
 
-%factor = 10000;
-factor = 1;
+factor = 10000;
+% factor = 1;
 
 format long
 fileID = fopen(histName);

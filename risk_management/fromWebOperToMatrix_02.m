@@ -1,4 +1,4 @@
-function [outputWP]=fromWebPageToMatrix_02(AlgoMagicNumber,newTimeScale,FullnameOrServername)
+function [outputWP]=fromWebOperToMatrix_02(AlgoMagicNumber,newTimeScale,FullnameOrServername)
 
 %%% ATTENTION:
 % the input Demo .csv is in a standard format
@@ -11,16 +11,19 @@ function [outputWP]=fromWebPageToMatrix_02(AlgoMagicNumber,newTimeScale,Fullname
 tf = isdir(FullnameOrServername);
 
 if tf == 1
+    display('Dowloading Online Operations Data from saved .csv');
     fid1 = fopen(FullnameOrServername, 'r');
     D = textscan(fid1,'%f%f%f%f%f%f%s%s%f%f%f%s%f%f%f%f%s%f%f', 'Delimiter', ',', 'HeaderLines', 0);
     fclose(fid1);
 else
     if strcmp(FullnameOrServername,'ServerTest') == 1;
+        display('Dowloading Online Operations Data from ServerTest');
         URL_test = 'http://52.33.13.29:9091/history/csv';
         fid1=urlread(URL_test);
         D = textscan(fid1,'%f%f%f%f%f%f%s%s%f%f%f%s%f%f%f%f%s%f%f', 'Delimiter', ',', 'HeaderLines', 0);
     end
     if strcmp(FullnameOrServername,'ServerProd') == 1;
+        display('Dowloading Online Operations Data from ServerProd');
         URL_prod = 'http://52.88.34.166:9091/history/csv';
         fid1=urlread(URL_prod);
         D = textscan(fid1,'%f%f%f%f%f%f%s%s%f%f%f%s%f%f%f%f%s%f%f', 'Delimiter', ',', 'HeaderLines', 0);
