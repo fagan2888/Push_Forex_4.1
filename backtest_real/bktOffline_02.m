@@ -76,7 +76,8 @@ classdef bktOffline_02 < handle
             
             obj.nData=nData_;
             
-            [histData, newHistData] = load_historical_02(histName, actTimeScale, newTimeScale);
+            [histData, newHistData] = load_historical_03(histName, dateStart, dateStop, obj.nData, actTimeScale, newTimeScale);
+            
             obj.starthisData = histData;
             obj.newHisData   = newHistData;
             
