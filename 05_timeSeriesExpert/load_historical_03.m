@@ -1,4 +1,4 @@
-function [HistData_1min, HistData_freq] = load_historical_03(histName, dateStart, dateStop, nData, actTimeScale, newTimeScale)
+function [HistData_1min, HistData_freq] = load_historical_03(histName, dateStart, dateStop, timeDifftoCET, nData, actTimeScale, newTimeScale)
 
 %%%%%%%%%%%%%%%%%%
 % load a historical file and creates matrices of historical at the original and new time scales
@@ -16,6 +16,7 @@ hisDataRaw=load(histName);
 
 % remove lines with no data (holes)
 histData = hisDataRaw( (hisDataRaw(:,1) ~=0), : );
+histData(:,6) = histData(:,6) + (timeDifftoCET/24); 
 
 [r,c] = size(histData);
 

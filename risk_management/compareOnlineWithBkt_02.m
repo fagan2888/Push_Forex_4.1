@@ -72,7 +72,13 @@ PerformanceBkt = PerformanceBkt.calcSinglePerformance('BKT',parameters,Operation
 PerformanceOnline = Performance_08;
 PerformanceOnline = PerformanceOnline.calcSinglePerformance('DEMO',parameters,OperationsOnline);
 
-
+figure
+plot(OperationsBkt(:,8),cumsum(PerformanceBkt.netReturns_pips),'-ob');
+hold on
+plot(OperationsOnline(:,8),cumsum(PerformanceOnline.netReturns_pips),'-or');
+title (AlgoMagicNumber,'FontSize',20)
+h_legend=legend('bkt','online');
+set(h_legend,'FontSize',18);
 
 % 
 
