@@ -1,4 +1,4 @@
-function [HistData_1min, HistData_freq] = load_historical_03(histName, dateStart, dateStop, timeDifftoCET, nData, actTimeScale, newTimeScale)
+function [HistData_1min, HistData_freq] = load_historical_03(histName, dateStart, dateStop, timeZoneShift, nData, actTimeScale, newTimeScale)
 
 %%%%%%%%%%%%%%%%%%
 % load a historical file and creates matrices of historical at the original and new time scales
@@ -12,11 +12,16 @@ function [HistData_1min, HistData_freq] = load_historical_03(histName, dateStart
 % standard!
 %%%%%%%%%%%%%%%%%%
 
-hisDataRaw=load(histName);
+hisDataRaw = load(histName);
 
 % remove lines with no data (holes)
-histData = hisDataRaw( (hisDataRaw(:,1) ~=0), : );
-histData(:,6) = histData(:,6) + (timeDifftoCET/24); 
+histData      = hisDataRaw( (hisDataRaw(:,1) ~=0), : );
+histData(:,6) = histData(:,6) + (timeZoneShift/24);
+dateLastNum   = histData(end,6);
+dateLast      = datestr(dateLastNum, 'mm/dd/yyyy HH:MM');
+dateFirstNum  = histData(1,6) + ((nData*newTimeScale)/(60*24));
+dateFirst     = datestr(dateFirstNum, 'mm/dd/yyyy HH:MM');
+
 
 [r,c] = size(histData);
 
@@ -38,7 +43,14 @@ if (dateStart == 0)
         histDataSelected = histData;
     else
         dateStartNum = histData(1,6);
-        dateStopNum  = datenum(dateStop, 'mm/dd/yyyy HH:MM');
+        dateStopNum  = datenum(dateStop, 'mm/dd/yyyy HH:MM');  
+        if dateStopNum > dateLastNum
+            message = strcat('please indicate a dateStop within:',{' '},dateLast,{' '},...
+                'or provide a longer historical. PLEASE: consider you have a timeZoneShift:',{' '},num2str(timeZoneShift));
+            h = msgbox(message,'WARN','warn');
+            waitfor(h)
+            return
+        end
         [indexSelected] = find ((histData(:,6) >= dateStartNum) & (histData(:,6) <= dateStopNum));
         histDataSelected = histData(indexSelected, :);
     end
@@ -46,11 +58,33 @@ else
     if (dateStop == 0)
         dateStartNum = datenum(dateStart, 'mm/dd/yyyy HH:MM');
         dateStopNum  = histData(end,6);
+        if dateStartNum < dateFirstNum
+            message = strcat('please indicate a dateStart after:',{' '},dateFirst,{' '},...
+                'or provide an older historical. PLEASE: consider you have a timeZoneShift:',{' '},num2str(timeZoneShift),...
+                {' '},'and nData:',{' '},num2str(nData));
+            h = msgbox(message,'WARN','warn');
+            waitfor(h)
+            return
+        end
         [indexSelected] = find ((histData(:,6) >= dateStartNum) & (histData(:,6) <= dateStopNum));
         histDataSelected = histData((indexSelected(1) - (nData*newTimeScale)):indexSelected(end), :);
     else
         dateStartNum = datenum(dateStart, 'mm/dd/yyyy HH:MM');
         dateStopNum  = datenum(dateStop, 'mm/dd/yyyy HH:MM');
+        if dateStopNum > dateLastNum
+            message = strcat('please indicate a dateStop within:',{' '},dateLast,{' '},...
+                'or provide a longer historical. PLEASE: consider you have a timeZoneShift:',{' '},num2str(timeZoneShift));
+            h = msgbox(message,'WARN','warn');
+            waitfor(h)
+            return
+        elseif dateStartNum < dateFirstNum
+            message = strcat('please indicate a dateStart after:',{' '},dateFirst,{' '},...
+                'or provide an older historical. PLEASE: consider you have a timeZoneShift:',{' '},num2str(timeZoneShift),...
+                {' '},'and nData:',{' '},num2str(nData));
+            h = msgbox(message,'WARN','warn');
+            waitfor(h)
+            return
+        end
         [indexSelected] = find ((histData(:,6) >= dateStartNum) & (histData(:,6) <= dateStopNum));
         histDataSelected = histData((indexSelected(1) - (nData*newTimeScale)):indexSelected(end), :);
     end
