@@ -5,7 +5,8 @@ function [OperationsOnline,OperationsBkt,PerformanceOnline,PerformanceBkt,HistDa
 % DESCRIPTION:
 % -------------------------------------------------------------
 % This function compares the perfromance of a specified Algo obtained by
-% the DEMO system the BKT or REAL.
+% the DEMO system the BKT or REAL. If the historical is not in the Standard format 
+% the function reformats it and saves it on the same name.
 % Before to running it modify the Algo parameter file please.
 % 
 % WARNINGS:
@@ -72,11 +73,24 @@ PerformanceBkt = PerformanceBkt.calcSinglePerformance('BKT',parameters,Operation
 PerformanceOnline = Performance_08;
 PerformanceOnline = PerformanceOnline.calcSinglePerformance('DEMO',parameters,OperationsOnline);
 
+
+% --------- plot results ----------- %
 figure
+title (AlgoMagicNumber,'FontSize',20)
+
+subplot(2,1,1)
 plot(OperationsBkt(:,8),cumsum(PerformanceBkt.netReturns_pips),'-ob');
 hold on
 plot(OperationsOnline(:,8),cumsum(PerformanceOnline.netReturns_pips),'-or');
-title (AlgoMagicNumber,'FontSize',20)
+ylabel('sumulative Profit and Loss');
+h_legend=legend('bkt','online');
+set(h_legend,'FontSize',18);
+
+subplot(2,1,2)
+plot(OperationsBkt(:,8),PerformanceBkt.netReturns_pips,'-ob');
+hold on
+plot(OperationsOnline(:,8),PerformanceOnline.netReturns_pips,'-or');
+ylabel('single operation Profit and Loss ');
 h_legend=legend('bkt','online');
 set(h_legend,'FontSize',18);
 
