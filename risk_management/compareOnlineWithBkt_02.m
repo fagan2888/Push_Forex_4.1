@@ -52,14 +52,12 @@ cellfun(@eval, C{1});
 
 
 % --------- start function ----------- %
-[OperationsOnline]=fromWebOperToMatrix_02(AlgoMagicNumber,newTimeScale,FullnameOrServername);
-
 switch c
     case 1
         display('Historical Data with standard format');
     case 2
         display('Historical Data with MT4 format ... reformatting');
-        [~,~]=fromMT4HystToBktHistorical_02(actTimeScale,newTimeScale,histName);
+        [~,~] = fromMT4HystToBktHistorical_02(actTimeScale,newTimeScale,histName);
 end
 
 bkt_Algo = bktOffline_02;
@@ -67,6 +65,10 @@ bkt_Algo = bkt_Algo.spin(parameters);
 HistData_1min = bkt_Algo.starthisData;
 HistData_freq = bkt_Algo.newHisData;
 OperationsBkt = bkt_Algo.outputBktOffline;
+
+dateFirstNum  = HistData_1min(1,6);
+dateLastNum   = HistData_1min(end,6);
+[OperationsOnline]=fromWebOperToMatrix_03(AlgoMagicNumber,dateFirstNum,dateLastNum,newTimeScale,FullnameOrServername);
 
 PerformanceBkt = Performance_08;
 PerformanceBkt = PerformanceBkt.calcSinglePerformance('BKT',parameters,OperationsBkt);
