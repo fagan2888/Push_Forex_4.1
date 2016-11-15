@@ -19,15 +19,21 @@
             % bkt_Algo_100201=bkt_Algo_100201.spin('parameters_Offline_Algo_100201_EURUSD.txt')
 
 
-
+AlgoMagicNumber = 100201
 nameAlgo = 'Algo100201_leadlag_EURUSD'
 Cross = 'EURUSD'
 nData_ = 100
-histName = 'EURUSD-04-2014-02-2016.csv' %  'C:\Users\alericci\Desktop\Forex 4.0 noShared\EURUSD-04-2014-02-2016.csv'  %'EURUSD_smallsample2014_2015.csv'
+histName = 'C:\Users\alericci\Desktop\Forex_nonShared\historical\EURUSD_1m_01062016_04112016_2.csv'  %'EURUSD-04-2014-02-2016.csv' %  'C:\Users\alericci\Desktop\Forex 4.0 noShared\EURUSD-04-2014-02-2016.csv'  %'EURUSD_smallsample2014_2015.csv'
 actTimeScale = 1
 newTimeScale = 30
-transCost = 1
+transCostBkt = 1
+transCostOnline = 0
 initialStack = 10000
 Leverage = 10
-plotPerformance = 1
-plotPerDistribution = 3 
+calcPerformance = 0
+plotPerformance = 1 
+calcPerDistribution = 0
+plotPerDistribution = 3
+dateStart = '08/08/2016 18:30'  % 0  % 'mm/dd/yyyy HH:MM'    % set to 0 for starting from the beginning (ActiveTRades: CET)
+dateStop  = '11/01/2016 14:00'  % 0  % 'mm/dd/yyyy HH:MM'    % set to 0 for stopping at the end (ActiveTRades: CET)
+timeZoneShift = 8.0;  % time differrence between the dataprovider (ActiveTRades: CET) and historical data (histDart.com: EST? ... set to 8)

@@ -78,16 +78,14 @@ PerformanceOnline = PerformanceOnline.calcSinglePerformance('DEMO',parameters,Op
 
 % --------- plot results ----------- %
 figure
-title (AlgoMagicNumber,'FontSize',20)
-
 subplot(2,1,1)
 plot(OperationsBkt(:,8),cumsum(PerformanceBkt.netReturns_pips),'-ob');
 hold on
 plot(OperationsOnline(:,8),cumsum(PerformanceOnline.netReturns_pips),'-or');
-ylabel('sumulative Profit and Loss');
+ylabel('cumulative Profit and Loss');
 h_legend=legend('bkt','online');
 set(h_legend,'FontSize',18);
-
+title (AlgoMagicNumber,'FontSize',20)
 subplot(2,1,2)
 plot(OperationsBkt(:,8),PerformanceBkt.netReturns_pips,'-ob');
 hold on
