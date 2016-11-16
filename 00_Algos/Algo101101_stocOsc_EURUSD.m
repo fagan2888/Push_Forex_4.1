@@ -1,5 +1,4 @@
-function [oper, openValue, closeValue, stopLoss, noLoose, minReturn] = Algo100200_leadlag_EURUSD(matrix,newTimeScalePoint,newTimeScalePointEnd,openValueReal,timeSeriesProperties,indexHisData)
-
+function [oper, openValue, closeValue, stopLoss, takeProfit, minReturn] = Algo101101_stocOsc_EURUSD(matrix,newTimeScalePoint,newTimeScalePointEnd,openValueReal,timeSeriesProperties,indexHisData)
 
 %
 % DESCRIPTION:
@@ -37,8 +36,8 @@ function [oper, openValue, closeValue, stopLoss, noLoose, minReturn] = Algo10020
 % openValue: suggested opening price
 % closeValue: suggested closing price
 % stopLoss: suggested SL
-% noLoose: suggested TP                                         <-  THIS IS CONFUSING
-% valueTp: NOT USED IN THE MAIN PROGRAM !!!!     <- THIS IS CONFUSING
+% noLoose: suggested TP                          <-  THIS IS CONFUSING
+% valueTp: NOT USED IN THE MAIN PROGRAM !!!!     <-  THIS IS CONFUSING
 % st: output from the stationarity test
 %
 % EXAMPLE of use:
@@ -46,14 +45,15 @@ function [oper, openValue, closeValue, stopLoss, noLoose, minReturn] = Algo10020
 % to be used in bktOffline or in demo/live mode
 %
 
-global      map;
-persistent  counter;
-persistent  countCycle;
+
+global     map;
+persistent counter;
+persistent countCycle;
 
 openValue  = 0;
 closeValue = 0;
 stopLoss   = 0;
-noLoose    = 0;
+takeProfit = 0;
 minReturn  = 0;
 %real      = 0;
 
@@ -73,21 +73,21 @@ if(isempty(countCycle) || countCycle == 0)
     countCycle = 1;
     operationState = OperationState;
     params = Parameters;
-    map('Algo_002_Ale') = RealAlgo(operationState,params);
-    oper = 0;
+    map('Algo101101') = RealAlgo(operationState,params);
+    oper      = 0;
     return;
 end
 
 
-ra = map('Algo_002_Ale');
-remove(map,'Algo_002_Ale');
+ra = map('Algo101101');
+remove(map,'Algo101101');
 
 params = ra.p;
 operationState = ra.os;
 
 
-%highs           = matrix(:,2);
-%lows         = matrix(:,3);
+highs           = matrix(:,2);
+lows            = matrix(:,3);
 chiusure        = matrix(:,4);
 %volumi          = matrix(:,5);
 
@@ -120,11 +120,12 @@ if newTimeScalePoint
     
     % 01c
     % -------- coreState filter -------------------- %
-    cState.core_Algo_002_leadlag(chiusure(1:end-1),params,2,20,4,7,1000);
+    cState.core_Algo_011_stocOsc( lows(1:end-1), highs(1:end-1), chiusure(1:end-1), params ,3,1,26,26);
     
 end
 
-state = cState.state;
+state=cState.state;
+
 
 if operationState.lock
     
@@ -158,17 +159,14 @@ else
             closingTime = params.get('closeTime_');
             operationState.latency = closingTime - openingTime;
             
-            dynamicParameters {1} = 1.2;  %closingForApproaching
-            %dynamicParameters {1} = 0.1;      %closingShrinkingBands
-            %dynamicParameters {2} = 1.5;    %closingShrinkingBands
+            dynamicParameters {1} = 1.2;
             [params,TakeProfitPrice,StopLossPrice,dynamicOn] = dynamicalTPandSLManager(operationState, chiusure, params, @closingForApproaching, dynamicParameters);
             if dynamicOn  == 1
                 params.set('openTime__',indexHisData);
             end
             
-            latencyTreshold = 100000;    % latency treshold in minutes
+            latencyTreshold = 1000000;    % latency treshold in minutes
             [operationState,~, params] = directTakeProfitManager (operationState, chiusure, params,TakeProfitPrice,StopLossPrice, latencyTreshold);
-
             
         elseif openValueReal < 0
             
@@ -204,15 +202,15 @@ else
     
 end
 
-oper = operationState.actualOperation;
+oper      = operationState.actualOperation;
 
 real_Algo = RealAlgo(operationState,params);
-map('Algo_002_Ale')     = real_Algo;
+map('Algo101101') = real_Algo;
 
-openValue = params.get('openValue_');
-closeValue= params.get('closeValue');
-stopLoss  = params.get('stopLoss__');
-noLoose   = params.get('noLoose___');
+openValue   = params.get('openValue_');
+closeValue  = params.get('closeValue');
+stopLoss    = params.get('stopLoss__');
+takeProfit  = params.get('noLoose___');
 
 clear real_Algo;
 clear params;
