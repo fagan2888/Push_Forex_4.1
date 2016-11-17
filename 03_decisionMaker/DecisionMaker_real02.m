@@ -21,10 +21,21 @@ classdef DecisionMaker_real02 < handle
         
         %% decision Real
         
-        %NOTE: funzione per gestire l'avvio e la terminazione del processo
-        % parallelo a partire da delle condizioni sui pattern dei ritorni
+
+        function obj = decisionRealOff (obj)
+            
+            obj.real=1;
+            
+        end
+   
         
+        
+               
         function obj = decisionReal1 (obj,returns)
+            
+            %NOTE: funzione per gestire l'avvio e la terminazione del processo
+            % parallelo a partire da delle condizioni sui pattern dei ritorni
+            
             
             if obj.init ==0
                 obj.real=0;

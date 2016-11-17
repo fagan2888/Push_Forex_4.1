@@ -1,4 +1,4 @@
-function [oper, openValue, closeValue, stopLoss, takeProfit, minReturn] = Algo101101_stocOsc_EURUSD(matrix,newTimeScalePoint,newTimeScalePointEnd,openValueReal,timeSeriesProperties,indexHisData)
+function [oper, openValue, closeValue, stopLoss, takeProfit, minReturn, real] = Algo101101_stocOsc_EURUSD(matrix,newTimeScalePoint,newTimeScalePointEnd,openValueReal,timeSeriesProperties,indexHisData)
 
 %
 % DESCRIPTION:
@@ -74,7 +74,8 @@ if(isempty(countCycle) || countCycle == 0)
     operationState = OperationState;
     params = Parameters;
     map('Algo101101') = RealAlgo(operationState,params);
-    oper      = 0;
+    oper = 0;
+    real = 0;
     return;
 end
 
@@ -179,6 +180,10 @@ else
         
         if state
             
+            % 03a
+            % -------- decMaker filter -------------------------- %
+            decMaker.decisionRealOff;
+            
             % 02b
             % -------- takeProfitManager: define TP and SL ------ %
             TakeP = floor(cState.suggestedTP);
@@ -211,6 +216,7 @@ openValue   = params.get('openValue_');
 closeValue  = params.get('closeValue');
 stopLoss    = params.get('stopLoss__');
 takeProfit  = params.get('noLoose___');
+real        = params.get('real______');
 
 clear real_Algo;
 clear params;
@@ -232,6 +238,7 @@ clear dev;
 clear matrix;
 clear ra;
 
+oper = oper * real;
 
 end
 

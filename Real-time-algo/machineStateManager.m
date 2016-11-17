@@ -4,6 +4,7 @@ classdef machineStateManager < handle
         
         statusNotification;
         machineStatus;
+        realMode;
         lastOperation;
         lastOpenValue;
         lastCloseValue;
