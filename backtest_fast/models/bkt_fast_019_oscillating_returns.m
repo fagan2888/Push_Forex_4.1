@@ -33,7 +33,7 @@ classdef bkt_fast_019_oscillating_returns < handle
             % npunti = lookback period per calcolare il fit
             
             
-            %% simula delle bande sulla derivata di un fit lineare e apre considerando una mean reversion
+            %% se il prezzo ha un jump improvviso aspetta il riassestamento poi apri nella stessa direzione
             
             %             hi = matrixNewHisData(:,2);
             %             lo = matrixNewHisData(:,3);

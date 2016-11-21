@@ -24,7 +24,7 @@ classdef bkt_fast_020_min_max_reverting < handle
     
     methods
         
-        function obj = spin(obj, Pminute, matrixNewHisData, ~, newTimeScale, N, M, cost, ~, ~, wTP, ~, plottami)
+        function obj = spin(obj, Pminute, matrixNewHisData, ~, newTimeScale, N, jump, cost, ~, ~, wTP, ~, plottami)
             
             % Pminute = prezzo al minuto
             % P = prezzo alla new time scale
@@ -33,7 +33,7 @@ classdef bkt_fast_020_min_max_reverting < handle
             % npunti = lookback period per calcolare il fit
             
             
-            %% apre opposto ai minimi o massimi assoluti toccati in un periodo
+            %% apre opposto ai minimi o massimi assoluti toccati in un periodo se c'e' stato un jump decente del prezzo
             
             hi = matrixNewHisData(:,2);
             lo = matrixNewHisData(:,3);
@@ -59,6 +59,7 @@ classdef bkt_fast_020_min_max_reverting < handle
             obj.indexClose = 0;
             s = zeros(sizeStorico,1);
             
+            M=4;
             b = (1/M)*ones(1,M);
             lag = filter(b,1,P);
             fluctuationslag=abs(P-lag);
@@ -68,9 +69,9 @@ classdef bkt_fast_020_min_max_reverting < handle
                 minimo = min(lo(z-N:z-1));
                 massimo = max(hi(z-N:z-1));
                 
-                if P(z) > massimo && massimo-minimo>20
+                if P(z) > massimo && massimo-minimo>jump
                     s(z) = -1;
-                elseif P(z) < minimo && massimo-minimo>20
+                elseif P(z) < minimo && massimo-minimo>jump
                     s(z) = 1;
                 end
                 
@@ -90,7 +91,7 @@ classdef bkt_fast_020_min_max_reverting < handle
                     
                     ntrades = ntrades + 1;
                     obj.arrayAperture(ntrades)=i;
-                    [obj, Pbuy, devFluct2 ] = obj.apri(i, P, fluctuationslag, M, ntrades, segnoOperazione, date);;
+                    [obj, Pbuy, devFluct2 ] = obj.apri(i, P, fluctuationslag, M, ntrades, segnoOperazione, date);
                     
                     volatility = min(floor(wTP*devFluct2),50);
                     TakeP = volatility;
