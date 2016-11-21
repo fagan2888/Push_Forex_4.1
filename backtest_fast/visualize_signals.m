@@ -78,6 +78,19 @@ switch lower(signal)
         sMacdPos = find(sMacd==1);
         sMacdNeg = find(sMacd==-1);
         
+        % plot macdvec e nineperma
+        
+        figure
+        ax(1) = subplot(2,1,1);
+        plot(cl,'LineWidth',1.5)
+        ax(2) = subplot(2,1,2);
+        plot(macdvec)
+        hold on
+        plot(nineperma)
+        legend('macdvec','nineperma')
+        linkaxes(ax,'x')
+        
+        
         % plot macd signal
         figure
         plot(cl,'LineWidth',1.5)
@@ -92,6 +105,7 @@ switch lower(signal)
         hold on
         plot(changeSignalMacd,cl(changeSignalMacd),'or','markersize',5,'LineWidth',2)
         title('when macd changes signal')
+        
         
         
     case 'rsi'
