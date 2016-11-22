@@ -55,6 +55,7 @@ classdef bkt_fast_005c_macd_above5_dynamical < handle
             obj.arrayAperture= zeros(sizeStorico,1);
             obj.minimumReturns = zeros(sizeStorico,1);
             
+            
             ntrades = 0;
             obj.indexClose = 0;
             s = zeros(sizeStorico,1);

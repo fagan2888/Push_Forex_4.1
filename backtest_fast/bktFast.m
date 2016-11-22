@@ -179,11 +179,11 @@ classdef bktFast < handle
                             
                             figure
                             subplot(1,2,1);
-                            plot(cumsum(temp_Training.outputbkt(:,4) - transCost))
+                            plot(cumsum(temp_Training.outputbkt(:,4).*temp_Training.outputbkt(:,6) - transCost))
                             title(['Temp Training, ', 'N =', num2str(n),' M =', num2str(ind_best) ,'. R/maxDD = ',num2str( current_best) ])
                             hold on
                             subplot(1,2,2);
-                            plot(cumsum(temp_paperTrad.outputbkt(:,4) - transCost))
+                            plot(cumsum(temp_paperTrad.outputbkt(:,4).*temp_paperTrad.outputbkt(:,6) - transCost))
                             title(['Temp Paper Trading, ', 'N =', num2str(n),' M =', num2str(ind_best) ,'. R/maxDD = ',num2str( risultato_temp) ])
                             
                         end
@@ -229,7 +229,7 @@ classdef bktFast < handle
             if WhatToPlot > 0
                 
                 figure
-                plot(cumsum(obj.bktfastTraining.outputbkt(:,4) - transCost))
+                plot(cumsum(obj.bktfastTraining.outputbkt(:,4).*obj.bktfastTraining.outputbkt(:,6) - transCost))
                 title(['Training Best Result, Final R over maxDD = ',num2str( risultato) ])
                 
             end
@@ -246,7 +246,7 @@ classdef bktFast < handle
             if WhatToPlot > 0
                 
                 figure
-                plot(cumsum(obj.bktfastPaperTrading.outputbkt(:,4) - transCost))
+                plot(cumsum(obj.bktfastPaperTrading.outputbkt(:,4).*obj.bktfastPaperTrading.outputbkt(:,6) - transCost))
                 title(['Paper Trading Result, Final R over maxDD = ',num2str( risultato) ])
                 
             end
@@ -310,7 +310,7 @@ classdef bktFast < handle
             if WhatToPlot > 0
                 
                 figure
-                plot(cumsum(obj.bktfastTry.outputbkt(:,4) - transCost))
+                plot(cumsum(obj.bktfastTry.outputbkt(:,4).*obj.bktfastTry.outputbkt(:,6) - transCost))
                 title(['Result, Final R over maxDD = ',num2str( risultato) ])
                 
                 % it is not possible to use this as long as there is
@@ -380,7 +380,7 @@ classdef bktFast < handle
                 obj.bktfastTry = obj.bktfastTry.spin(hisData(:,4), newHisData, actTimeScale, newTimeScale, n, m, transCost, pips_TP, pips_SL, stdev_TP, stdev_SL, 0);
                 
                 %                     subpl(LegNum) = subplot( size(N,2), size(M,2), LegNum );
-                plot(cumsum(obj.bktfastTry.outputbkt(:,4) - transCost),'color',rand(1,3))
+                plot(cumsum(obj.bktfastTry.outputbkt(:,4).*obj.bktfastTry.outputbkt(:,6) - transCost),'color',rand(1,3))
                 Legend{LegNum}=strcat( num2str(n),'-',num2str(m) );
                 LegNum= LegNum+1;
                 
