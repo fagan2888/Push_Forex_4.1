@@ -29,6 +29,23 @@ classdef DecisionMaker_real02 < handle
         end
    
         
+        function obj = decisionRealZigZag (obj,LastReturn)
+            
+            %NOTE: se l'ultima operazione e' vinta, salta la prossima
+            % (da usare se i ritorni sono seghettati: una vinta una persa)
+            
+            if ( LastReturn > 0 )
+            
+                obj.real = 0;
+            
+            else
+                
+                obj.real = 1;
+                
+            end
+            
+        end
+        
         
                
         function obj = decisionReal1 (obj,returns)
