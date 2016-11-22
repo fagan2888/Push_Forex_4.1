@@ -21,12 +21,13 @@
             % -------------------------------------------------------------
 
             
-nameAlgo = 'bkt_fast_020_2_min_max_reverting_real' % 'bkt_fast_020_min_max_reverting'  % 'bkt_fast_020b_min_max_reverting_con_trendline' % 
-N = 12 % 17 % 10:40 % 7  %  2:10
-M = 50 % 10:5:50  % 1:8 % 4 % [8 8 8] %  1:8 
+nameAlgo = 'bkt_fast_020b_min_max_reverting_con_trendline_3D' % 'bkt_fast_020_min_max_reverting' 
+N = 10:40 % 7  %  2:10      % questo e' per vedere min e max indietro
+M = 10:5:50  % 1:8 % 4 % [8 8 8] %  1:8     % questo e' il jump
+Z = 2:10           % questo e' per la volatilita' (di solito e' lui M)
 N_greater_than_M = 0              
-Cross = 'AUDCAD' % 'EURJPY' %  'EURGBP' %  'EURUSD'            
-histName =   'AUDCAD-12-2014-07-2016.csv' % 'EURJPY-01-2014-11-2016.csv' % 'EURUSD-01-2014-07-2016.csv' %   'AUDCAD.csv'   %  'EURGBP-01-2014-11-2016.csv' %   'EURUSD_smallsample2014_2015.csv' %  'EURGBP.csv'  %   
+Cross = 'EURJPY' % 'AUDCAD' % 'EURGBP' %  'EURUSD'            
+histName =  'EURJPY-01-2014-11-2016.csv' % 'EURUSD-01-2014-07-2016.csv' %   'AUDCAD.csv'   %  'EURGBP-01-2014-11-2016.csv' %   'EURUSD_smallsample2014_2015.csv' %  'EURGBP.csv'  %   
 actTimeScale = 1             		
 newTimeScale = 30             		
 transCost = 3

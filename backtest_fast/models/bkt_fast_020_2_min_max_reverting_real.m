@@ -1,4 +1,4 @@
-classdef bkt_fast_020_min_max_reverting < handle
+classdef bkt_fast_020_2_min_max_reverting_real < handle
     
     % bktfast VERSION 3 (with arrayAperture and minimumReturns)
     
@@ -35,6 +35,8 @@ classdef bkt_fast_020_min_max_reverting < handle
             
             
             %% apre opposto ai minimi o massimi assoluti toccati in un periodo se c'e' stato un jump decente del prezzo
+            % questo usa il decisionmaker realZigZag che metter real=0 dopo
+            % che ha indovinato un'operazione
             
             hi = matrixNewHisData(:,2);
             lo = matrixNewHisData(:,3);
@@ -55,6 +57,8 @@ classdef bkt_fast_020_min_max_reverting < handle
             obj.latency= zeros(sizeStorico,1);
             obj.arrayAperture= zeros(sizeStorico,1);
             obj.minimumReturns = zeros(sizeStorico,1);
+            real = zeros(sizeStorico,1);
+            LastReturn = 0;
             
             ntrades = 0;
             obj.indexClose = 0;
@@ -92,6 +96,7 @@ classdef bkt_fast_020_min_max_reverting < handle
                     
                     ntrades = ntrades + 1;
                     obj.arrayAperture(ntrades)=i;
+                    real(ntrades) = mydecisionRealZigZag (LastReturn);
                     [obj, Pbuy, devFluct2 ] = obj.apri(i, P, fluctuationslag, M, ntrades, segnoOperazione, date);
                     
                     volatility = min(floor(wTP*devFluct2),50);
@@ -124,7 +129,8 @@ classdef bkt_fast_020_min_max_reverting < handle
                         
                         if ( condTP >=0 ) || ( condSL >= 0 )
                             
-                            obj.r(indice_I) = (Pminute(j)-Pbuy)*segnoOperazione - cost;
+                            LastReturn = segnoOperazione*(Pminute(j) - Pbuy) - cost;
+                            obj.r(indice_I) = LastReturn;
                             obj.closingPrices(ntrades) = Pminute(j);
                             obj.minimumReturns(ntrades)=calculate_min_return(Pbuy, Pminute(newTimeScale*i:j), segnoOperazione);
                             obj.ClDates(ntrades) = date(indice_I); %controlla
@@ -163,7 +169,7 @@ classdef bkt_fast_020_min_max_reverting < handle
             obj.outputbkt(:,4) = (obj.closingPrices(1:obj.indexClose) - ...
                 obj.openingPrices(1:obj.indexClose)).*obj.direction(1:obj.indexClose);   % returns
             obj.outputbkt(:,5) = obj.direction(1:obj.indexClose);              % direction
-            obj.outputbkt(:,6) = ones(obj.indexClose,1);                    % real
+            obj.outputbkt(:,6) = real(1:obj.indexClose);                    % real
             obj.outputbkt(:,7) = obj.OpDates(1:obj.indexClose);              % opening date in day to convert use: d2=datestr(outputDemo(:,2), 'mm/dd/yyyy HH:MM')
             obj.outputbkt(:,8) = obj.ClDates(1:obj.indexClose);                % closing date in day to convert use: d2=datestr(outputDemo(:,2), 'mm/dd/yyyy HH:MM')
             obj.outputbkt(:,9) = ones(obj.indexClose,1)*1;                 % lots setted for single operation
