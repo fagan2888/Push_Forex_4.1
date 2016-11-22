@@ -745,6 +745,52 @@ classdef coreState_real02 < handle
             
         end
         
-    end
+        
+        function obj = core_Algo_020_min_max_reverting (obj, low, high, closure, N, M, jump, maxSL)
+            
+            
+            %NOTE:
+            %LOGICA: apre opposto ai minimi o massimi assoluti toccati in un periodo se c'e' stato un jump decente del prezzo
+            
+            b = (1/M)*ones(1,M);
+            smoothClose2 = filter(b,1,closure);
+            fluctuations2=abs(closure-smoothClose2);
+            devFluct2=std(fluctuations2(M:end));
+            
+            minimo = min(low(end-N:end-1));
+            massimo = max(high(end-N:end-1));
+                           
+            if ( closure(end) > massimo ) && ( massimo-minimo>jump )
+                
+                obj.state=1;
+                obj.suggestedDirection=-1;
+                volatility = min(floor(wTP*devFluct2),maxSL); % 100200 100201 100204 100205
+                % volatility = wTP*devFluct2; % 1002 THIS OBTAINED BETTER PERFORMANCE !!
+                obj.suggestedTP = volatility;
+                obj.suggestedSL = volatility;
+                
+            elseif ( closure(end) < minimo ) && ( massimo-minimo>jump )
+                
+                obj.state=1;
+                obj.suggestedDirection=1;
+                volatility = min(floor(wTP*devFluct2),maxSL); % 100200 100201 100204 100205
+                % volatility = wTP*devFluct2; % 1002 THIS OBTAINED BETTER PERFORMANCE !!
+                obj.suggestedTP = volatility;
+                obj.suggestedSL = volatility;
+                
+            else
+                
+                obj.state=0;
+                
+            end
+            
+        end
+        
+        
+        
+        
+        
+        
+    end % end of methods
     
-end
+end % end of classdef
