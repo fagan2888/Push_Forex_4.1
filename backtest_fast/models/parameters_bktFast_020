@@ -21,7 +21,7 @@
             % -------------------------------------------------------------
 
             
-nameAlgo = 'bkt_fast_020_2_min_max_reverting_real' % 'bkt_fast_020_min_max_reverting'  % 'bkt_fast_020b_min_max_reverting_con_trendline' % 
+nameAlgo = 'bkt_fast_020_min_max_reverting'  %  'bkt_fast_020_2_min_max_reverting_real' % 'bkt_fast_020b_min_max_reverting_con_trendline' % 
 N = 12 % 17 % 10:40 % 7  %  2:10
 M = 50 % 10:5:50  % 1:8 % 4 % [8 8 8] %  1:8 
 N_greater_than_M = 0              

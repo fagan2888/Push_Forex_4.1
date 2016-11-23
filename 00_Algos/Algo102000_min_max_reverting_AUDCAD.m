@@ -120,7 +120,7 @@ if newTimeScalePoint
     
     % 01c
     % -------- coreState filter -------------------- %
-    cState.core_Algo_020_min_max_reverting (lows(1:end-1), highs(1:end-1), closure(1:end-1), 12, 4, 50, 50)
+    cState.core_Algo_020_min_max_reverting (lows(1:end-1), highs(1:end-1), chiusure(1:end-1), 12, 4, 50, 50);
     
 end
 

@@ -764,7 +764,7 @@ classdef coreState_real02 < handle
                 
                 obj.state=1;
                 obj.suggestedDirection=-1;
-                volatility = min(floor(wTP*devFluct2),maxSL); % 100200 100201 100204 100205
+                volatility = min(floor(10*devFluct2),maxSL); % 100200 100201 100204 100205
                 % volatility = wTP*devFluct2; % 1002 THIS OBTAINED BETTER PERFORMANCE !!
                 obj.suggestedTP = volatility;
                 obj.suggestedSL = volatility;
@@ -773,7 +773,7 @@ classdef coreState_real02 < handle
                 
                 obj.state=1;
                 obj.suggestedDirection=1;
-                volatility = min(floor(wTP*devFluct2),maxSL); % 100200 100201 100204 100205
+                volatility = min(floor(10*devFluct2),maxSL); % 100200 100201 100204 100205
                 % volatility = wTP*devFluct2; % 1002 THIS OBTAINED BETTER PERFORMANCE !!
                 obj.suggestedTP = volatility;
                 obj.suggestedSL = volatility;
