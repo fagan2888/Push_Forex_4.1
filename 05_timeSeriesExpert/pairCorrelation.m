@@ -6,14 +6,14 @@ histName2 = 'C:\Users\alericci\Desktop\Forex_nonShared\historical\AUDCAD_1m_0107
 dateStart = '07/05/2016 00:00';
 dateStop  = '11/01/2016 00:00';
 timeZoneShift = 0;
-nData = 100;
+nData = 1;
 actTimeScale = 1;
-newTimeScale = 1;
+newTimeScale = 1440;
 
-[histData1, ~] = load_historical_03(histName1, dateStart, dateStop, timeZoneShift, nData, actTimeScale, newTimeScale);
-[histData2, ~] = load_historical_03(histName2, dateStart, dateStop, timeZoneShift, nData, actTimeScale, newTimeScale);
-data1 = histData1(:,4);
-data2 = histData2(:,4);
+[~, histData1] = load_historical_03(histName1, dateStart, dateStop, timeZoneShift, nData, actTimeScale, newTimeScale);
+[~, histData2] = load_historical_03(histName2, dateStart, dateStop, timeZoneShift, nData, actTimeScale, newTimeScale);
+data1 = diff(histData1(:,4));
+data2 = diff(histData2(:,4));
 
 % for testing (peak at lag = 36)
 %
