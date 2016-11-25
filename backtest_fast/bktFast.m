@@ -116,6 +116,7 @@ classdef bktFast < handle
             
             matrixsize = max([ N M ]);
             obj.R_over_maxDD = nan(matrixsize);
+            index_scatterplot = 1; % used later for scatter plot
             
             tic
             
@@ -151,7 +152,8 @@ classdef bktFast < handle
                 
                 % display partial results of optimization
                 [current_best,ind_best] = max(obj.R_over_maxDD(n,:));
-                
+ 
+                % perform paper trading and show results only if R/maxDD is decent
                 if max(obj.R_over_maxDD(n,:)) > 0.8
                     
                     temp_Training = feval(algo);
@@ -160,7 +162,8 @@ classdef bktFast < handle
                     if temp_Training.indexClose>20
                         performance_temp_Training = p.calcSinglePerformance(nameAlgo,'bktWeb',histName,Cross,newTimeScale,transCost,10000,10,temp_Training.outputbkt,0);
                         
-                        display(['Train: best R/maxDD= ' , num2str(current_best),'. Avg pips/operat= ',num2str(performance_temp_Training.pipsEarned/temp_Training.indexClose),'.  N =', num2str(n),' M =', num2str(ind_best) ]);
+                        avgPipsOperTraining = performance_temp_Training.pipsEarned/temp_Training.indexClose;
+                        display(['Train: best R/maxDD= ' , num2str(current_best),'. Avg pips/operat= ',num2str(avgPipsOperTraining),'.  N =', num2str(n),' M =', num2str(ind_best) ]);
                         display(['num operations =', num2str(temp_Training.indexClose) ,', pips earned =', num2str(performance_temp_Training.pipsEarned)]);
                         
                         % try paper trading on partial result and display some numbers
@@ -169,9 +172,18 @@ classdef bktFast < handle
                         temp_paperTrad = temp_paperTrad.spin(hisDataPaperTrad(:,4), newHisDataPaperTrad, actTimeScale, newTimeScale, n, ind_best, transCost, pips_TP, pips_SL, stdev_TP, stdev_SL, 0);
                         performance_temp = p.calcSinglePerformance(nameAlgo,'bktWeb',histName,Cross,newTimeScale,transCost,10000,10,temp_paperTrad.outputbkt,0);
                         
+                        avgPipsOperPaperTrad= performance_temp.pipsEarned/temp_paperTrad.indexClose;
                         risultato_temp = performance_temp.pipsEarned / abs(performance_temp.maxDD_pips) ;
-                        display(['Papertrad: R/maxDD = ', num2str(risultato_temp),'. Avg pips/operat= ',num2str(performance_temp.pipsEarned/temp_paperTrad.indexClose)]);
+                        display(['Papertrad: R/maxDD = ', num2str(risultato_temp),'. Avg pips/operat= ',num2str(avgPipsOperPaperTrad)]);
                         display(['num operations =', num2str(temp_paperTrad.indexClose) ,', pips earned =', num2str(performance_temp.pipsEarned) ]);
+                        
+                        % store results of training and paper trad for this run used for scatter plot
+                        myscatterplot(index_scatterplot,1) = current_best;
+                        myscatterplot(index_scatterplot,2) = risultato_temp;
+                        myscatterplot(index_scatterplot,3) = avgPipsOperTraining;
+                        myscatterplot(index_scatterplot,4) = avgPipsOperPaperTrad;
+                        index_scatterplot = index_scatterplot + 1;
+                        
                         
                         %plot if it is good:
                         if risultato_temp > 1.0 && WhatToPlot > 1
@@ -208,6 +220,22 @@ classdef bktFast < handle
                 contour(temp)
                 grid on
                 colorbar
+                
+                figure
+                scatter(myscatterplot(:,1), myscatterplot(:,2),'filled');
+                hold on
+                refline(1,0)
+                xlabel('training')
+                ylabel('paper trading')
+                title('R/maxDD')
+                
+                figure
+                scatter(myscatterplot(:,3), myscatterplot(:,4),'filled');
+                hold on
+                refline(1,0)
+                xlabel('training')
+                ylabel('paper trading')
+                title('Average pips/operation')
                 
             end
             
