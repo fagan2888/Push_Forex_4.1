@@ -63,7 +63,7 @@
       <div ng-if="statusAlert" class="alert alert-danger status_alert" role="alert">{{statusAlert || ''}}</div>
     </div>
     <div id="header_app">
-      <span class="back_button" ng-if="backtestPage" ng-click="hideBacktestAndIntegrationTest()"><i class="fa fa-arrow-left fa-border button_border"></i></span>
+      <span class="back_button" ng-if="backtestPage" ng-click="getPage('algorithms')"><i class="fa fa-arrow-left fa-border button_border"></i></span>
       <!--4Casters Console-->------
       <span class="conf_button"><i class="fa fa-bars fa-border button_border"></i></span>
     </div>
@@ -119,17 +119,17 @@
                     </div>
                   </div>
                   
-                  <div class="col-xs-1 test_algo_console_cpu">
+                  <!--<div class="col-xs-1 test_algo_console_cpu">
                     <div class="test_algo_console_cpu_label" style="line-height: 52px;">Cpu</div>
                   </div>
                   <div class="col-xs-2 test_algo_console_cpu" style="margin-left:0px">
                     <div class="test_algo_console_cpu_label" style="line-height: 53px;font-size:20px">{{dataCurrentAlgos.integrationTest.cpu}}</div>
-                  </div>
-                  <div class="col-xs-1 test_algo_console_ram">
-                    <div class="test_algo_console_ram_label" style="line-height: 52px;">Ram</div>
+                  </div>-->
+                  <div class="col-xs-4 test_algo_console_ram" style="margin-left: 32px">
+                    <div class="test_algo_console_ram_label" style="line-height: 52px;">Last backtest, RAM used:</div>
                   </div>
                   <div class="col-xs-2 test_algo_console_ram">
-                    <div class="test_algo_console_ram_label" style="line-height: 53px;font-size:20px">{{dataCurrentAlgos.integrationTest.ram}}</div>
+                    <div class="test_algo_console_ram_label" style="line-height: 53px;text-align:left">{{dataCurrentAlgos.integrationTest.ram}}</div>
                   </div>
                  
                   <!--<div class="col-xs-2 test_algo_console_ram_rate">
@@ -190,18 +190,21 @@
                     </div>
                   </div>
 
-                  <div class="col-xs-1 beta_server_algo_console_cpu">
+                  <!--<div class="col-xs-1 beta_server_algo_console_cpu">
                     <div class="beta_server_algo_console_cpu_label" style="line-height: 52px;">Cpu</div>
                   </div>
                   <div class="col-xs-2 beta_server_algo_console_cpu" style="margin-left:0px">
                     <div class="beta_server_algo_console_cpu_label" style="line-height: 53px;font-size:20px">{{dataCurrentAlgos.betaTest.cpu}}</div>
+                  </div>-->
+                  <div ng-if="dataCurrentAlgos.betaTest.statusValue == 2" class="col-xs-6 beta_server_algo_console_ram" style="margin-left: 32px">
+                    <div class="beta_server_algo_console_ram_label">Algorithm is running with params:</div>
+                    <div class="beta_server_algo_console_ram_label">
+                      <span class="cutText" tooltip-placement="bottom-left" uib-tooltip="{{paramSerialized}}">{{paramSerialized}}</span>
+                    </div>
                   </div>
-                  <div class="col-xs-1 beta_server_algo_console_ram">
-                    <div class="beta_server_algo_console_ram_label" style="line-height: 52px;">Ram</div>
-                  </div>
-                  <div class="col-xs-2 beta_server_algo_console_ram">
-                    <div class="beta_server_algo_console_ram_label" style="line-height: 53px;font-size:20px">{{dataCurrentAlgos.betaTest.ram}}</div>
-                  </div>
+                  <!--<div class="col-xs-2 beta_server_algo_console_ram">
+                    <div class="beta_server_algo_console_ram_label" style="line-height: 53px;font-size:18px">{{dataCurrentAlgos.betaTest.ram}}</div>
+                  </div>-->
 
 
 
@@ -267,17 +270,24 @@
                     </div>
                   </div>
 
-                  <div class="col-xs-1 prod_server_algo_console_cpu">
+                  <!--<div class="col-xs-1 prod_server_algo_console_cpu">
                     <div class="prod_server_algo_console_cpu_label" style="line-height: 52px;">Cpu</div>
                   </div>
                   <div class="col-xs-2 prod_server_algo_console_cpu" style="margin-left:0px">
                     <div class="prod_server_algo_console_cpu_label" style="line-height: 53px;font-size:20px">{{dataCurrentAlgos.prod.cpu}}</div>
-                  </div>
-                  <div class="col-xs-1 prod_server_algo_console_ram">
-                    <div class="prod_server_algo_console_ram_label" style="line-height: 52px;">Ram</div>
+                  </div>-->
+                  <!--<div class="col-xs-4 prod_server_algo_console_ram" style="margin-left: 32px">
+                    <div class="prod_server_algo_console_ram_label" style="line-height: 52px;">Last backtest, RAM used:</div>
                   </div>
                   <div class="col-xs-2 prod_server_algo_console_ram">
-                    <div class="prod_server_algo_console_ram_label" style="line-height: 53px;font-size:20px">{{dataCurrentAlgos.prod.ram}}</div>
+                    <div class="prod_server_algo_console_ram_label" style="line-height: 53px;font-size:18px">{{dataCurrentAlgos.prod.ram}}</div>
+                  </div>-->
+
+                  <div ng-if="dataCurrentAlgos.prod.statusValue == 2" class="col-xs-6 beta_server_algo_console_ram" style="margin-left: 32px">
+                    <div class="prod_server_algo_console_ram_label">Algorithm is running with params:</div>
+                    <div class="prod_server_algo_console_ram_label">
+                      <span class="cutText" tooltip-placement="bottom-left" uib-tooltip="{{paramSerialized}}">{{paramSerialized}}</span>
+                    </div>
                   </div>
 
                   <div class="col-xs-1 prod_server_algo_console_actions">
@@ -750,12 +760,24 @@
             </div>
           </div>
         </form>
-          <form class="form-inline">
-            <div class="form-group" style="margin-top:30px;margin-left:15px">
-              <button ng-click="saveAlgoParam()"  class="btn btn-default" style="background-color: #272628;border-radius:0px;border:0px;width:269px;color:#fff;height:38px;outline:0px">Save & Build</button>
-              <!--<button class="btn btn-default" style="background-color: #696969;border-radius:0px;border:0px;width:132px;color:#fff;height:38px;outline:0px">Cancel</button>-->
-            </div>
-          </form>
+
+
+        <form class="form-inline" style='margin-left: 23px;'>
+          <div class="form-group">
+            <label for="magicNumber">Magic number:</label>
+            <input type="number" class="form-control" value="{{algo_setting[0].magic}}" ng-model="algo_setting[0].magic" style="width: 94%;border-radius: 0px;border: 0px solid #fff;" id="magicNumber" placeholder="">
+          </div>
+        </form>
+
+        
+
+
+        <form class="form-inline">
+          <div class="form-group" style="margin-top:15px;padding: 23px;">
+            <button ng-click="saveAlgoParam('integrationTest','')"  class="btn btn-default" style="background-color: #272628;border-radius:0px;border:0px;width:269px;color:#fff;height:38px;outline:0px">Save & Build</button>
+            <!--<button class="btn btn-default" style="background-color: #696969;border-radius:0px;border:0px;width:132px;color:#fff;height:38px;outline:0px">Cancel</button>-->
+          </div>
+        </form>
           <!--<button type="submit" class="btn btn-default">Send invitation</button>-->
       </div>
       
@@ -786,6 +808,12 @@
             <td>{{ data.values }}</td>
           </tr>
         </table>
+        <form class="form-inline" style='margin-left: 23px;'>
+          <div class="form-group">
+            <label for="magicNumber">Magic number:</label>
+            <input type="number" ng-readonly="true" class="form-control" value="{{permanent_algo_setting[0].magic}}" style="width: 94%;border-radius: 0px;border: 0px solid #fff;" id="magicNumber" placeholder="">
+          </div>
+        </form>
 
       </div>
 

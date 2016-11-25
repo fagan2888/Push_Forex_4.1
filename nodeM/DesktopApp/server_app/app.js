@@ -6,11 +6,14 @@ var db = "";
 var serverName = "betaTest";
 var mv = require('mv');
 var request = require('request');
+var execFile = require('child_process').execFile;
 
 console.log("start");
 
 var domainPath = "C:/4CastersApp/server/";
 var domainPath2 = "C:/4CastersApp/server";
+var pubPort = 50026;
+var subPort = 50027;
 
 function copyFile(source, target, cb) {
   var cbCalled = false;
@@ -843,7 +846,12 @@ app.post('/uploadOnBeta', function(req, res) {
               console.log("error1");
               console.log("ERROR! Can't make the directory: "+err);
             }else{
-              var target = domainPath+'tempFile/'+algoId+'/'+nameFile;
+
+              var algoName1 = nameFile.split('.')[0];
+              var algoNameExtension = nameFile.split('.')[1];
+              var algoPath = algoName1+'_'+algoId+'.'+algoNameExtension;
+
+              var target = domainPath+'tempFile/'+algoId+'/'+algoPath;
               var wr = fs.createWriteStream(target);
               wr.on("error", function(err) {
                 console.log("error1: "+JSON.stringify(err));
@@ -871,7 +879,12 @@ app.post('/uploadOnBeta', function(req, res) {
                     console.log("ERROR! Can't make the directory: "+err);
                   }else{
                     console.log("err 0: ");
-                    mv(domainPath+'tempFile/'+algoId+'/'+nameFile, domainPath+algoId+'/'+nameFile, function(err) {
+
+                    var algoName1 = nameFile.split('.')[0];
+                    var algoNameExtension = nameFile.split('.')[1];
+                    var algoPath = algoName1+'_'+algoId+'.'+algoNameExtension;
+
+                    mv(domainPath+'tempFile/'+algoId+'/'+algoPath, domainPath+algoId+'/'+algoPath, function(err) {
                       console.log("err 1: ",err);
                       if(err == undefined || err == null || err == ""){
                         //deletAllFilesInFolder('/Applications/4Casters/tempFile/'+algoId);
@@ -990,7 +1003,15 @@ app.post('/uploadOnBeta', function(req, res) {
           if(err){
             console.log("ERROR! Can't make the directory: "+err);
           }else{
-            var target = domainPath+'tempFile/'+algoId+'/'+nameFile;
+
+            var nameFile = req.headers['name-file'];
+            var algoId = req.headers['algo-id'];
+
+            var algoName1 = nameFile.split('.')[0];
+            var algoNameExtension = nameFile.split('.')[1];
+            var algoPath = algoName1+'_'+algoId+'.'+algoNameExtension;
+
+            var target = domainPath+'tempFile/'+algoId+'/'+algoPath;
             var wr = fs.createWriteStream(target);
             wr.on("error", function(err) {
               console.log("error1: "+JSON.stringify(err));
@@ -1019,7 +1040,7 @@ app.post('/uploadOnBeta', function(req, res) {
                   console.log("ERROR! Can't make the directory: "+err);
                 }else{
 
-                  mv(domainPath+'tempFile/'+algoId+'/'+nameFile, domainPath+algoId+'/'+nameFile, function(err) {
+                  mv(domainPath+'tempFile/'+algoId+'/'+algoPath, domainPath+algoId+'/'+algoPath, function(err) {
                     console.log("err plus: ",err);
                     if(err == undefined || err == null || err == ""){
                       //deletAllFilesInFolder('/Applications/4Casters/tempFile');
@@ -1127,6 +1148,8 @@ app.post('/uploadOnBeta', function(req, res) {
 
 
 
+
+
 app.post('/uploadOnProd', function(req, res) {
 
   console.log("req: "+req.headers);
@@ -1217,7 +1240,13 @@ app.post('/uploadOnProd', function(req, res) {
               console.log("error1");
               console.log("ERROR! Can't make the directory: "+err);
             }else{
-              var target = domainPath+'tempFile/'+algoId+'/'+nameFile;
+
+              var algoName1 = nameFile.split('.')[0];
+              var algoNameExtension = nameFile.split('.')[1];
+              var algoPath = algoName1+'_'+algoId+'.'+algoNameExtension;
+
+              var target = domainPath+'tempFile/'+algoId+'/'+algoPath;
+              console.log('target: ',target);
               var wr = fs.createWriteStream(target);
               wr.on("error", function(err) {
                 console.log("error1: "+JSON.stringify(err));
@@ -1230,27 +1259,37 @@ app.post('/uploadOnProd', function(req, res) {
 
                 var tempJson = JSON.parse(algoDetails);
                 delete tempJson['$$hashKey'];
-                if (tempJson2['integrationTest'].param != '--') {
-                  console.log("tempJson2['integrationTest'].param: "+JSON.stringify(tempJson2['integrationTest'].param) );
-                  for(var i=0; i<= tempJson2['integrationTest'].param.length-1; i++){
-                    console.log("tempJson2['integrationTest'].param[i]: "+JSON.stringify(tempJson2['integrationTest'].param[i]) );
-                    delete tempJson2['integrationTest'].param[i]['$$hashKey'];  
+                if (tempJson['integrationTest'].param != '--') {
+                  console.log("tempJson['integrationTest'].param: "+JSON.stringify(tempJson['integrationTest'].param) );
+                  for(var i=0; i<= tempJson['integrationTest'].param.length-1; i++){
+                    console.log("tempJson['integrationTest'].param[i]: "+JSON.stringify(tempJson['integrationTest'].param[i]) );
+                    delete tempJson['integrationTest'].param[i]['$$hashKey'];  
                   }
                 }
 
                 //UPDATED SETTING ON Beta SEREVR - GOING TO MOVE ALGO FORM TEMP FOLDER TO SERVER FOLDER, AND GOING TO UPDATE JSON DB WITH NEW ALGO SETTING
+                console.log('domainPath+algoId: ',domainPath+algoId);
                 fs.mkdir(domainPath+algoId, 0766, function(err){
                   if(err){
                     console.log("error1");
                     console.log("ERROR! Can't make the directory: "+err);
                   }else{
                     console.log("err 0: ");
-                    mv(domainPath+'tempFile/'+algoId+'/'+nameFile, domainPath+algoId+'/'+nameFile, function(err) {
+
+                    var algoName1 = nameFile.split('.')[0];
+                    var algoNameExtension = nameFile.split('.')[1];
+                    var algoPath = algoName1+'_'+algoId+'.'+algoNameExtension;
+
+                    console.log('from: ',domainPath+'tempFile/'+algoId+'/'+algoPath);
+                    console.log('to: ',domainPath+algoId+'/'+algoPath);
+                    var from = domainPath+'tempFile/'+algoId+'/'+algoPath;
+                    var to = domainPath+algoId+'/'+algoPath;
+                    mv(from, to, function(err) {
                       console.log("err 1: ",err);
                       if(err == undefined || err == null || err == ""){
                         //deletAllFilesInFolder('/Applications/4Casters/tempFile/'+algoId);
                         console.log("in");
-                        deleteFolderRecursive(domainPath+algoId);
+                        deleteFolderRecursive(domainPath+'tempFile/'+algoId);
                         var hed = {"status":"200","msg":"Algorithm uploaded on Server"};
                         res.set('response-msg', JSON.stringify(hed));
                         console.log("closed file");
@@ -1258,11 +1297,11 @@ app.post('/uploadOnProd', function(req, res) {
                         
                         var tempJson2 = JSON.parse(algoDetails);
                         delete tempJson2['$$hashKey'];
-                         if (tempJson2['integrationTest'].param != '--') {
-                          console.log("tempJson2['integrationTest'].param: "+JSON.stringify(tempJson2['integrationTest'].param) );
-                          for(var i=0; i<= tempJson2['integrationTest'].param.length-1; i++){
-                            console.log("tempJson2['integrationTest'].param[i]: "+JSON.stringify(tempJson2['integrationTest'].param[i]) );
-                            delete tempJson2['integrationTest'].param[i]['$$hashKey'];  
+                        if (tempJson['integrationTest'].param != '--') {
+                          console.log("tempJson['integrationTest'].param: "+JSON.stringify(tempJson['integrationTest'].param) );
+                          for(var i=0; i<= tempJson['integrationTest'].param.length-1; i++){
+                            console.log("tempJson['integrationTest'].param[i]: "+JSON.stringify(tempJson['integrationTest'].param[i]) );
+                            delete tempJson['integrationTest'].param[i]['$$hashKey'];  
                           }
                         }
                         
@@ -1315,7 +1354,7 @@ app.post('/uploadOnProd', function(req, res) {
                         res.set('response-msg', JSON.stringify(hed));
                         res.status(200).send({error:1,msg:"Error to create Algo",algoId:algoId}); 
                       }
-                    });    
+                    });   
                    } 
 
                 });
@@ -1325,7 +1364,7 @@ app.post('/uploadOnProd', function(req, res) {
               req.on('data', function (chunk) {
                   //console.log(chunk);
                   data += chunk;
-                  //console.log("data.length: ",data.length);
+                  console.log("data.length: ",data.length);
               });
               req.pipe(wr);
               req.on('error', function(e) {
@@ -1366,7 +1405,12 @@ app.post('/uploadOnProd', function(req, res) {
           if(err){
             console.log("ERROR! Can't make the directory: "+err);
           }else{
-            var target = domainPath+'tempFile/'+algoId+'/'+nameFile;
+
+            var algoName1 = nameFile.split('.')[0];
+            var algoNameExtension = nameFile.split('.')[1];
+            var algoPath = algoName1+'_'+algoId+'.'+algoNameExtension;
+
+            var target = domainPath+'tempFile/'+algoId+'/'+algoPath;
             var wr = fs.createWriteStream(target);
             wr.on("error", function(err) {
               console.log("error1: "+JSON.stringify(err));
@@ -1382,7 +1426,7 @@ app.post('/uploadOnProd', function(req, res) {
               if (tempJson['integrationTest'].param != '--') {
                 console.log("tempJson['integrationTest'].param: "+JSON.stringify(tempJson['integrationTest'].param) );
                 for(var i=0; i<= tempJson['integrationTest'].param.length-1; i++){
-                  console.log("tempJson2['integrationTest'].param[i]: "+JSON.stringify(tempJson['integrationTest'].param[i]) );
+                  console.log("tempJson['integrationTest'].param[i]: "+JSON.stringify(tempJson['integrationTest'].param[i]) );
                   delete tempJson['integrationTest'].param[i]['$$hashKey'];  
                 }
               }
@@ -1395,7 +1439,11 @@ app.post('/uploadOnProd', function(req, res) {
                   console.log("ERROR! Can't make the directory: "+err);
                 }else{
 
-                  mv(domainPath+'tempFile/'+algoId+'/'+nameFile, domainPath+algoId+'/'+nameFile, function(err) {
+                  var algoName1 = nameFile.split('.')[0];
+                  var algoNameExtension = nameFile.split('.')[1];
+                  var algoPath = algoName1+'_'+algoId+'.'+algoNameExtension;
+
+                  mv(domainPath+'tempFile/'+algoId+'/'+algoPath, domainPath+algoId+'/'+algoPath, function(err) {
                     console.log("err plus: ",err);
                     if(err == undefined || err == null || err == ""){
                       //deletAllFilesInFolder('/Applications/4Casters/tempFile');
@@ -1501,6 +1549,10 @@ app.get('/updateSettingStartStopAlgo', function(req, res) {
   var actionStop = req.query.actionStop;
   var statusValue = req.query.statusValue;
   var localAlgoVersion = req.query.localLastAlgoVersion;
+  var param = null;
+  if (req.query.param != undefined && req.query.param != null && req.query.param != '') {
+    param = req.query.param;
+  };
 
   var updateSetting = function(algoId,newServerObj,newAlgoVersion,serverName,callback){
     var action = {};
@@ -1540,6 +1592,9 @@ app.get('/updateSettingStartStopAlgo', function(req, res) {
         docs[0][serverName].actionStart = actionStart;
         docs[0][serverName].actionStop = actionStop;
         docs[0][serverName].statusValue = statusValue;
+        if (param != null) {
+          docs[0][serverName].param = param;  
+        };
         docs[0].algo_version = localAlgoVersion;
 
         updateSetting(docs[0]['_id'],docs[0][serverName],localAlgoVersion,serverName,function(){
@@ -1566,7 +1621,10 @@ app.get('/startAlgoOnBeta', function(req, res) {
   var prodServer = req.query.prodServer;
   var remoteServerURL = req.query.remoteServerURL;
   var serverName = req.query.serverName;
+  var paramForRunning = req.query.paramForRunning;
 
+  //var magic = paramForRunning.split('_')[0]
+  //  CHECK IF MAGIC IS UNIQUE
 
   var updateSetting = function(algoId,newServerObj,newAlgoVersion,serverName,callback){
     var action = {};
@@ -1593,76 +1651,237 @@ app.get('/startAlgoOnBeta', function(req, res) {
       res.status(200).send({error:1,msg:"Error to create Algo",algoId:algoId}); 
   }
 
-  // TODO - double check on database before to check folder
-  db.find({ _id: algoId }, function (err, docs) {
-
+  console.log("magic number: ",paramForRunning.split('_')[0]);
+  console.log("magic number: ",paramForRunning.split('_')[1]);
+  db.find({}, function (err, docs) {
+    console.log("result: "+docs);
+    console.log("result: "+JSON.stringify(docs) );
     if (err) {
-      res.status(500);
-    };
-    if (docs.length > 0) {
-
-      console.log("localAlgoVersion: ",localAlgoVersion);
-      console.log("docs[0].algo_version: ",docs[0].algo_version);
-
-      if (docs[0].algo_version > localAlgoVersion) {
-        console.log("a new version of the Algorithm is on the Servers. Sync locally the new version of the algorithm and try to remove the algorithm again");
-        res.status(200).send({error:1,msg:"A new algo version is available on Server, sync your app before to delete algo",algo_id:algoId});
-      }else if (docs[0].algo_version == localAlgoVersion){
-
-        console.log("algo exist on server and they have the same local version");
-        
-        docs[0].algo_version = parseInt(docs[0].algo_version) + 1;
-
-        if(!fs.existsSync(domainPath+algoId)){
-          var hed = {"status":"400","msg":"to start Algo. This Algorithm is not on server"};
-          res.set('response-msg', JSON.stringify(hed));
-          res.status(200).send({error:1,msg:"Error to start Algo",algoId:algoId}); 
-        }else{
-          docs[0]['betaTest'].statusLabel = "Running";
-          docs[0]['betaTest'].statusValue = "2";
-          docs[0]['betaTest'].actionStart = true;
-          docs[0]['betaTest'].actionStop = false;
-
-          updateSetting(docs[0]['_id'],docs[0]['betaTest'],docs[0].algo_version,'betaTest',function(){
-            if(prodServer == 'true' && remoteServerURL != "") {
-              // PROD SERVER IS DEFINED - GOING TO UPDATE SETTING ON PROD SERVER
-
-              var options = {
-                url : remoteServerURL+'/updateSettingStartStopAlgo?tmpAlgoId='+algoId+"&localLastAlgoVersion="+docs[0].algo_version+"&serverName=betaTest&statusLabel=Running&statusValue=2&actionStart=true&actionStop=false",
-              };
-              request(options, function (error, response, body) {
-                console.log("error: ",error);
-                var body = JSON.parse(body);
-                if (!error && response.statusCode == 200 && body.error == '0') {
-                  //NEW ALGO UPLOADED - GOING TO ANSWEAR TO CLIENT 200 OK
-                  var hed = {"status":"200","msg":"Algo started on beta server. Setting updated on Prod server"};
-                  res.set('response-msg', JSON.stringify(hed));
-                  res.status(200).send({error:0,msg:"Algo started on beta server and updated setting on prod",algoId:algoId,new_algo_version:docs[0].algo_version}); 
-                }else{
-                  var hed = {"status":"200","msg":"Algorithm started on Beta Server, Error to update prod server setting."};
-                  res.set('response-msg', JSON.stringify(hed));
-                  res.status(200).send({error:0,msg:"Algorithm started on Beta Server, Error to update prod server setting.  ",algoId:algoId,new_algo_version:docs[0].algo_version}); 
-                }
-              });
-            }else{
-              var hed = {"status":"200","msg":"Algorithm started on Beta Server"};
-              res.set('response-msg', JSON.stringify(hed));
-              res.status(200).send({error:0,msg:"Algo started on beta server: ",algoId:algoId,new_algo_version:docs[0].algo_version}); 
-            }
-          }); 
-        }              
-      }else{
-        var hed = {"status":"400","msg":" to start algo"};
-        res.set('response-msg', JSON.stringify(hed));
-        res.status(200).send({error:1,msg:"Error to start Algo. Sync local before to start algo"}); 
-      }   
+      console.log('error');
     }else{
-      var hed = {"status":"400","msg":" to start algo"};
-      res.set('response-msg', JSON.stringify(hed));
-      res.status(200).send({error:1,msg:"Error to start Algo. Algo is not deployed on Server"}); 
-    }
+      var magic = paramForRunning.split('_')[0];
+      docs.forEach(function(val,i){
+        
+        if (val['_id'] != algoId) {
+          console.log('val["_id"]: ',val['_id']);
+          val.betaTest.param.forEach(function(valP,indexP){
+            if (valP.magic == magic) {
+              console.log('Beta server: a different algo is using the same magic number. Found magic in db ');
+              var hed = {"status":"400","msg":"to start Algo. This magic number already exist"};
+              res.set('response-msg', JSON.stringify(hed));
+              res.status(200).send({error:1,msg:"Error to start Algo",algoId:algoId}); 
+            };
+          });
+          val.prod.param.forEach(function(valP,indexP){
+            if (valP.magic == magic) {
+              console.log('Prod server: a different algo is using the same magic number. Found magic in db ');
+              var hed = {"status":"400","msg":"to start Algo. This magic number already exist"};
+              res.set('response-msg', JSON.stringify(hed));
+              res.status(200).send({error:1,msg:"Error to start Algo",algoId:algoId}); 
+            };
+          }); 
+        };
 
+      });
+
+
+
+      // TODO - double check on database before to check folder
+      db.find({ _id: algoId }, function (err, docs) {
+
+        if (err) {
+          res.status(500);
+        };
+        if (docs.length > 0) {
+
+          console.log("localAlgoVersion: ",localAlgoVersion);
+          console.log("docs[0].algo_version: ",docs[0].algo_version);
+
+          if (docs[0].algo_version > localAlgoVersion) {
+            console.log("a new version of the Algorithm is on the Servers. Sync locally the new version of the algorithm and try to remove the algorithm again");
+            res.status(200).send({error:1,msg:"A new algo version is available on Server, sync your app before to delete algo",algo_id:algoId});
+          }else if (docs[0].algo_version == localAlgoVersion){
+
+            console.log("algo exist on server and they have the same local version");
+            
+            docs[0].algo_version = parseInt(docs[0].algo_version) + 1;
+
+            if(!fs.existsSync(domainPath+algoId)){
+              var hed = {"status":"400","msg":"to start Algo. This Algorithm is not on server"};
+              res.set('response-msg', JSON.stringify(hed));
+              res.status(200).send({error:1,msg:"Error to start Algo",algoId:algoId}); 
+            }else{
+
+
+
+              var algoNameEXE = docs[0].algoName.split('.')[0];
+              var algoNameExtension = docs[0].algoName.split('.')[1];
+              var algoPathForExecution = domainPath+algoId+'/'+algoNameEXE+'_'+algoId+'.'+algoNameExtension;
+
+              var bkCrossList = [];
+              var fullParams = '';
+
+              //cross_list[0].cross,cross_list[0].dataLenght,cross_list[0].timeFrame
+              //var paramForRunning = req.query.paramForRunning;
+              var algo_setting = [];
+                  //{cross: null,timeframe: 'm1', values: 'v1', magic:''},
+              console.log('paramForRunning: ',paramForRunning);
+              var magic = paramForRunning.split('_')[0];
+              var cross_list = paramForRunning.split('_')[1].split('$');
+
+              cross_list.forEach(function(stringVal,i){
+                var val = stringVal.split('@');
+                var str;
+
+                algo_setting.push( {cross: val[0],timeframe: val[1], values: val[2], magic:magic} );
+
+                if( cross_list.indexOf(val.cross) > -1 ){
+                  str = ' TIMEFRAMEQUOTE@MT4@ACTIVTRADES@'+val[0]+'@'+val[1]+'@'+val[2];
+                }else{
+                  str = ' OPERATIONS@ACTIVTRADES@'+val[0]+'@'+magic+' STATUS@'+val[0]+'@'+magic+' TIMEFRAMEQUOTE@MT4@ACTIVTRADES@'+val[0]+'@'+val[1]+'@'+val[2]+' SKIP@ACTIVTRADES@'+val[0]+'@'+magic;
+                }
+                fullParams = fullParams + str;
+              });
+
+              var algoParamsForExecution = '127.0.0.1 '+pubPort+' '+subPort+fullParams;
+              console.log('algoPathForExecution: ',algoPathForExecution);
+              console.log('algoParamsForExecution: ',algoParamsForExecution.split(' '));
+              //cross_list[0].cross,cross_list[0].dataLenght,cross_list[0].timeFrame
+              //127.0.0.1 PubPort SubPort
+              //OPERATIONS@ACTIVTRADES@EURGBP@9999 
+              //STATUS@EURGBP@9999 
+              //TIMEFRAMEQUOTE@MT4@ACTIVTRADES@EURGBP@m1@v5 
+              //SKIP@ACTIVTRADES@EURGBP@9999
+              //IF ALGO IS MADE IN MATLAB
+
+              var getDirectories = function(srcpath) {
+                return fs.readdirSync(srcpath).filter(function(file) {
+                  return fs.statSync(path.join(srcpath, file)).isDirectory();
+                });
+              }
+
+              /*var stringPathVar;
+              var list;
+              if(fs.existsSync($scope.srcpath)){
+                list = getDirectories($scope.srcpath);
+                console.log("list: ",list);
+                list.forEach(function(val,i){
+                  var srcpath2 = $scope.srcpath + "/" +val +"/runtime/win64";  
+                  srcpath2 = srcpath2.replace(/\//g, '\\');
+                  console.log("srcpath2: ",srcpath2);
+                  list[i] = srcpath2;
+                });
+                list.push( process.env['PATH'] );
+
+                var ZeroMQPathBin = $scope.zmq_dir_bin.replace(/\//g, '\\');
+                list.push(ZeroMQPathBin);
+
+                stringPathVar = list.join(';');
+              }
+
+              console.log("stringPathVar: ",stringPathVar);
+              process.env['PATH'] = stringPathVar;*/
+              var environment = process.env;  
+              console.log("environment: ",environment);
+              var config = {
+                  env: environment
+              };
+              console.log("config: ",config);
+              console.log('process.env[PATH]: ',process.env['PATH']);
+              console.log('algoParamsForExecution: ',algoParamsForExecution.split(' ') );
+              execFile(algoPathForExecution,  algoParamsForExecution.split(' '), config, function(data){
+                  //console.log("algoPathForExecution: ",algoPathForExecution);
+                  console.log('the current working dir is : ',data);
+                  console.log(" start algo");
+
+              });    
+
+              setTimeout(function(){
+
+                docs[0]['betaTest'].statusLabel = "Running";
+                docs[0]['betaTest'].statusValue = "2";
+                docs[0]['betaTest'].actionStart = true;
+                docs[0]['betaTest'].actionStop = false;
+                docs[0]['betaTest'].param = algo_setting;
+
+                updateSetting(docs[0]['_id'],docs[0]['betaTest'],docs[0].algo_version,'betaTest',function(){
+                  if(prodServer == 'true' && remoteServerURL != "") {
+                    // PROD SERVER IS DEFINED - GOING TO UPDATE SETTING ON PROD SERVER
+
+                    var options = {
+                      url : remoteServerURL+'/updateSettingStartStopAlgo?tmpAlgoId='+algoId+"&localLastAlgoVersion="+docs[0].algo_version+"&serverName=betaTest&statusLabel=Running&statusValue=2&actionStart=true&actionStop=false&param="+paramForRunning,
+                    };
+                    request(options, function (error, response, body) {
+                      console.log("error: ",error);
+                      var body = JSON.parse(body);
+                      if (!error && response.statusCode == 200 && body.error == '0') {
+                        //NEW ALGO UPLOADED - GOING TO ANSWEAR TO CLIENT 200 OK
+                        var hed = {"status":"200","msg":"Algo started on beta server. Setting updated on Prod server"};
+                        res.set('response-msg', JSON.stringify(hed));
+                        res.status(200).send({error:0,msg:"Algo started on beta server and updated setting on prod",algoId:algoId,new_algo_version:docs[0].algo_version}); 
+                      }else{
+                        var hed = {"status":"200","msg":"Algorithm started on Beta Server, Error to update prod server setting."};
+                        res.set('response-msg', JSON.stringify(hed));
+                        res.status(200).send({error:0,msg:"Algorithm started on Beta Server, Error to update prod server setting.  ",algoId:algoId,new_algo_version:docs[0].algo_version}); 
+                      }
+                    });
+                  }else{
+                    var hed = {"status":"200","msg":"Algorithm started on Beta Server"};
+                    res.set('response-msg', JSON.stringify(hed));
+                    res.status(200).send({error:0,msg:"Algo started on beta server: ",algoId:algoId,new_algo_version:docs[0].algo_version}); 
+                  }
+                });   
+
+              },2000); 
+
+
+              
+
+              
+
+
+
+
+
+      
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+              
+            }              
+          }else{
+            var hed = {"status":"400","msg":" to start algo"};
+            res.set('response-msg', JSON.stringify(hed));
+            res.status(200).send({error:1,msg:"Error to start Algo. Sync local before to start algo"}); 
+          }   
+        }else{
+          var hed = {"status":"400","msg":" to start algo"};
+          res.set('response-msg', JSON.stringify(hed));
+          res.status(200).send({error:1,msg:"Error to start Algo. Algo is not deployed on Server"}); 
+        }
+
+      });
+
+
+
+
+
+
+    }
   });
+
 });
 
 
@@ -1676,6 +1895,7 @@ app.get('/startAlgoOnProd', function(req, res) {
   var betaServer = req.query.betaServer;
   var remoteServerURL = req.query.remoteServerURL;
   var serverName = req.query.serverName;
+  var paramForRunning = req.query.paramForRunning;
 
 
   var updateSetting = function(algoId,newServerObj,newAlgoVersion,serverName,callback){
@@ -1703,77 +1923,218 @@ app.get('/startAlgoOnProd', function(req, res) {
       res.status(200).send({error:1,msg:"Error to create Algo",algoId:algoId}); 
   }
 
-  // TODO - double check on database before to check folder
-  db.find({ _id: algoId }, function (err, docs) {
 
+  db.find({}, function (err, docs) {
+    console.log("result: "+docs);
+    console.log("result: "+JSON.stringify(docs) );
     if (err) {
-      res.status(500);
-    };
-    if (docs.length > 0) {
-
-      console.log("localAlgoVersion: ",localAlgoVersion);
-      console.log("docs[0].algo_version: ",docs[0].algo_version);
-
-      if (docs[0].algo_version > localAlgoVersion) {
-        console.log("a new version of the Algorithm is on the Servers. Sync locally the new version of the algorithm and try to remove the algorithm again");
-        res.status(200).send({error:1,msg:"A new algo version is available on Server, sync your app before to delete algo",algo_id:algoId});
-      }else if (docs[0].algo_version == localAlgoVersion){
-
-        console.log("algo exist on server and they have the same local version");
-        
-        docs[0].algo_version = parseInt(docs[0].algo_version) + 1;
-
-        if(!fs.existsSync(domainPath+algoId)){
-          var hed = {"status":"400","msg":"to start Algo. This Algorithm is not on server"};
-          res.set('response-msg', JSON.stringify(hed));
-          res.status(200).send({error:1,msg:"Error to start Algo",algoId:algoId}); 
-        }else{
-          docs[0]['prod'].statusLabel = "Running";
-          docs[0]['prod'].statusValue = "2";
-          docs[0]['prod'].actionStart = true;
-          docs[0]['prod'].actionStop = false;
-
-          updateSetting(docs[0]['_id'],docs[0]['prod'],docs[0].algo_version,'prod',function(){
-            if(betaServer == 'true' && remoteServerURL != "") {
-              // PROD SERVER IS DEFINED - GOING TO UPDATE SETTING ON PROD SERVER
-              var options = {
-                url : remoteServerURL+'/updateSettingStartStopAlgo?tmpAlgoId='+algoId+"&localLastAlgoVersion="+docs[0].algo_version+"&serverName=prod&statusLabel=Running&statusValue=2&actionStart=true&actionStop=false",
-              };
-              request(options, function (error, response, body) {
-                console.log("error: ",error);
-                var body = JSON.parse(body);
-                if (!error && response.statusCode == 200 && body.error == '0') {
-                  //NEW ALGO UPLOADED - GOING TO ANSWEAR TO CLIENT 200 OK
-                  var hed = {"status":"200","msg":"Algo started on prod server. Setting updated on Beta server"};
-                  res.set('response-msg', JSON.stringify(hed));
-                  res.status(200).send({error:0,msg:"Algo started on prod server and updated setting on beta",algoId:algoId,new_algo_version:docs[0].algo_version}); 
-                }else{
-                  var hed = {"status":"200","msg":"Algorithm started on prod Server, Error to update beta server setting."};
-                  res.set('response-msg', JSON.stringify(hed));
-                  res.status(200).send({error:0,msg:"Algorithm started on Beta Server, Error to update prod server setting.  ",algoId:algoId,new_algo_version:docs[0].algo_version}); 
-                }
-              });
-            }else{
-              var hed = {"status":"200","msg":"Algorithm started on prod Server"};
-              res.set('response-msg', JSON.stringify(hed));
-              res.status(200).send({error:0,msg:"Algo started on prod server: ",algoId:algoId,new_algo_version:docs[0].algo_version}); 
-            }
-          }); 
-        }              
-      }else{
-        var hed = {"status":"400","msg":" to start algo"};
-        res.set('response-msg', JSON.stringify(hed));
-        res.status(200).send({error:1,msg:"Error to start Algo. Sync local before to start algo"}); 
-      }   
+      console.log('error');
     }else{
-      var hed = {"status":"400","msg":" to start algo"};
-      res.set('response-msg', JSON.stringify(hed));
-      res.status(200).send({error:1,msg:"Error to start Algo. Algo is not deployed on Server"}); 
+      var magic = paramForRunning.split('_')[0];
+      docs.forEach(function(val,i){
+        
+        if (val['_id'] != algoId) {
+          console.log('val["_id"]: ',val['_id']);
+          val.betaTest.param.forEach(function(valP,indexP){
+            if (valP.magic == magic) {
+              console.log('Beta server: a different algo is using the same magic number. Found magic in db ');
+              var hed = {"status":"400","msg":"to start Algo. This magic number already exist"};
+              res.set('response-msg', JSON.stringify(hed));
+              res.status(200).send({error:1,msg:"Error to start Algo",algoId:algoId}); 
+            };
+          });
+          val.prod.param.forEach(function(valP,indexP){
+            if (valP.magic == magic) {
+              console.log('Prod server: a different algo is using the same magic number. Found magic in db ');
+              var hed = {"status":"400","msg":"to start Algo. This magic number already exist"};
+              res.set('response-msg', JSON.stringify(hed));
+              res.status(200).send({error:1,msg:"Error to start Algo",algoId:algoId}); 
+            };
+          }); 
+        };
+
+      });
+
+      // TODO - double check on database before to check folder
+      db.find({ _id: algoId }, function (err, docs) {
+
+        if (err) {
+          res.status(500);
+        };
+        if (docs.length > 0) {
+
+          console.log("localAlgoVersion: ",localAlgoVersion);
+          console.log("docs[0].algo_version: ",docs[0].algo_version);
+
+          if (docs[0].algo_version > localAlgoVersion) {
+            console.log("a new version of the Algorithm is on the Servers. Sync locally the new version of the algorithm and try to remove the algorithm again");
+            res.status(200).send({error:1,msg:"A new algo version is available on Server, sync your app before to delete algo",algo_id:algoId});
+          }else if (docs[0].algo_version == localAlgoVersion){
+
+            console.log("algo exist on server and they have the same local version");
+            
+            docs[0].algo_version = parseInt(docs[0].algo_version) + 1;
+
+            if(!fs.existsSync(domainPath+algoId)){
+              var hed = {"status":"400","msg":"to start Algo. This Algorithm is not on server"};
+              res.set('response-msg', JSON.stringify(hed));
+              res.status(200).send({error:1,msg:"Error to start Algo",algoId:algoId}); 
+            }else{
+              
+
+
+
+
+
+
+
+
+
+
+                var algoNameEXE = docs[0].algoName.split('.')[0];
+              var algoNameExtension = docs[0].algoName.split('.')[1];
+              var algoPathForExecution = domainPath+algoId+'/'+algoNameEXE+'_'+algoId+'.'+algoNameExtension;
+
+              var bkCrossList = [];
+              var fullParams = '';
+
+              //cross_list[0].cross,cross_list[0].dataLenght,cross_list[0].timeFrame
+              //var paramForRunning = req.query.paramForRunning;
+              var algo_setting = [];
+                  //{cross: null,timeframe: 'm1', values: 'v1', magic:''},
+
+              var magic = paramForRunning.split('_')[0]
+              var cross_list = paramForRunning.split('_')[1].split('$');
+
+              cross_list.forEach(function(stringVal,i){
+                var val = stringVal.split('@');
+                var str;
+
+                algo_setting.push( {cross: val[0],timeframe: val[1], values: val[2], magic:magic} );
+
+                if( cross_list.indexOf(val.cross) > -1 ){
+                  str = ' TIMEFRAMEQUOTE@MT4@ACTIVTRADES@'+val[0]+'@'+val[1]+'@'+val[2];
+                }else{
+                  str = ' OPERATIONS@ACTIVTRADES@'+val[0]+'@'+magic+' STATUS@'+val[0]+'@'+magic+' TIMEFRAMEQUOTE@MT4@ACTIVTRADES@'+val[0]+'@'+val[1]+'@'+val[2]+' SKIP@ACTIVTRADES@'+val[0]+'@'+magic;
+                }
+                fullParams = fullParams + str;
+              });
+
+              var algoParamsForExecution = '127.0.0.1 '+pubPort+' '+subPort+fullParams;
+              console.log('algoPathForExecution: ',algoPathForExecution);
+              console.log('algoParamsForExecution: ',algoParamsForExecution.split(' '));
+              //cross_list[0].cross,cross_list[0].dataLenght,cross_list[0].timeFrame
+              //127.0.0.1 PubPort SubPort
+              //OPERATIONS@ACTIVTRADES@EURGBP@9999 
+              //STATUS@EURGBP@9999 
+              //TIMEFRAMEQUOTE@MT4@ACTIVTRADES@EURGBP@m1@v5 
+              //SKIP@ACTIVTRADES@EURGBP@9999
+              //IF ALGO IS MADE IN MATLAB
+
+              var getDirectories = function(srcpath) {
+                return fs.readdirSync(srcpath).filter(function(file) {
+                  return fs.statSync(path.join(srcpath, file)).isDirectory();
+                });
+              }
+
+              /*var stringPathVar;
+              var list;
+              if(fs.existsSync($scope.srcpath)){
+                list = getDirectories($scope.srcpath);
+                console.log("list: ",list);
+                list.forEach(function(val,i){
+                  var srcpath2 = $scope.srcpath + "/" +val +"/runtime/win64";  
+                  srcpath2 = srcpath2.replace(/\//g, '\\');
+                  console.log("srcpath2: ",srcpath2);
+                  list[i] = srcpath2;
+                });
+                list.push( process.env['PATH'] );
+
+                var ZeroMQPathBin = $scope.zmq_dir_bin.replace(/\//g, '\\');
+                list.push(ZeroMQPathBin);
+
+                stringPathVar = list.join(';');
+              }
+
+              console.log("stringPathVar: ",stringPathVar);
+              process.env['PATH'] = stringPathVar;*/
+              var environment = process.env;  
+              console.log("environment: ",environment);
+              var config = {
+                  env: environment
+              };
+              console.log("config: ",config);
+              console.log('process.env[PATH]: ',process.env['PATH']);
+              console.log('algoParamsForExecution.split(): ',algoParamsForExecution.split(' ') );
+              execFile(algoPathForExecution,  algoParamsForExecution.split(' '), config, function(data){
+                  console.log("algoPathForExecution: ",algoPathForExecution);
+                  console.log('the current working dir is : ',data);
+                  console.log(" start algo");
+
+              });
+
+              setTimeout(function(){    
+
+                docs[0]['prod'].statusLabel = "Running";
+                docs[0]['prod'].statusValue = "2";
+                docs[0]['prod'].actionStart = true;
+                docs[0]['prod'].actionStop = false;
+                docs[0]['prod'].param = algo_setting;
+
+                updateSetting(docs[0]['_id'],docs[0]['prod'],docs[0].algo_version,'prod',function(){
+                  if(betaServer == 'true' && remoteServerURL != "") {
+                    // PROD SERVER IS DEFINED - GOING TO UPDATE SETTING ON PROD SERVER
+
+                    var options = {
+                      url : remoteServerURL+'/updateSettingStartStopAlgo?tmpAlgoId='+algoId+"&localLastAlgoVersion="+docs[0].algo_version+"&serverName=prod&statusLabel=Running&statusValue=2&actionStart=true&actionStop=false&param="+paramForRunning,
+                    };
+                    request(options, function (error, response, body) {
+                      console.log("error: ",error);
+                      var body = JSON.parse(body);
+                      if (!error && response.statusCode == 200 && body.error == '0') {
+                        //NEW ALGO UPLOADED - GOING TO ANSWEAR TO CLIENT 200 OK
+                        var hed = {"status":"200","msg":"Algo started on prod. Setting updated on Beta server"};
+                        res.set('response-msg', JSON.stringify(hed));
+                        res.status(200).send({error:0,msg:"Algo started on prod and updated setting on Beta server",algoId:algoId,new_algo_version:docs[0].algo_version}); 
+                      }else{
+                        var hed = {"status":"200","msg":"Algorithm started on prod, Error to update Beta server setting."};
+                        res.set('response-msg', JSON.stringify(hed));
+                        res.status(200).send({error:0,msg:"Algorithm started on prod, Error to update beta server setting.  ",algoId:algoId,new_algo_version:docs[0].algo_version}); 
+                      }
+                    });
+                  }else{
+                    var hed = {"status":"200","msg":"Algorithm started on prod Server"};
+                    res.set('response-msg', JSON.stringify(hed));
+                    res.status(200).send({error:0,msg:"Algo started on prod server: ",algoId:algoId,new_algo_version:docs[0].algo_version}); 
+                  }
+                }); 
+
+
+              },2000);
+
+
+
+
+
+
+
+
+            }              
+          }else{
+            var hed = {"status":"400","msg":" to start algo"};
+            res.set('response-msg', JSON.stringify(hed));
+            res.status(200).send({error:1,msg:"Error to start Algo. Sync local before to start algo"}); 
+          }   
+        }else{
+          var hed = {"status":"400","msg":" to start algo"};
+          res.set('response-msg', JSON.stringify(hed));
+          res.status(200).send({error:1,msg:"Error to start Algo. Algo is not deployed on Server"}); 
+        }
+
+      });
+
     }
-
   });
-
-
 });
 
 

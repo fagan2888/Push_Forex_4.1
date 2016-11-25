@@ -22,6 +22,7 @@ movieStubApp.controller("homeCtrl", function ($scope, $location) {
     $scope.algo_conf_right_conf_algo = true;
 
 
+    $scope.paramSerialized = '';
     $scope.srcpath = "C:/Program Files/MATLAB/MATLAB Compiler Runtime";
     $scope.zmq_dir_bin = 'C:/Program Files/ZeroMQ 4.0.4/bin'
     $scope.zmq_dir_include = 'C:/PROGRA~1/ZEROMQ~1.4/include';
@@ -48,6 +49,8 @@ movieStubApp.controller("homeCtrl", function ($scope, $location) {
     var mv = require('mv');
     require('nw.gui').Window.get().showDevTools();
     var tcpPortUsed = require('tcp-port-used');
+    var wincmd = require('node-windows');
+    var cpu = require('windows-cpu');
 
     $scope.installationCheck = false;
     setTimeout(function(){
@@ -400,10 +403,148 @@ movieStubApp.controller("homeCtrl", function ($scope, $location) {
     $scope.startBacktestFromClient();
 
 
+
+    $scope.saveBacktestResult = function(algoId,dataBacktest,progress){
+
+      storedb('algos').find({"_id":algoId},function(err,result){
+        if(err == undefined || err == null || err == ""){ 
+          
+          var serverName = 'integrationTest';
+          console.log('result: ',result);
+          result[0][serverName].backtestResult = dataBacktest;
+          console.log('result: ',result[0][serverName]);
+          //result[0][serverName].backtestResult = JSON.parse(result[0][serverName].backtestResult);
+
+          $scope.dataCurrentAlgos.integrationTest.backtestResult = result[0][serverName].backtestResult;
+
+          var search = {'_id':algoId };
+          var action2 = {};
+          action2[serverName] = result[0][serverName];
+          var query = {"$set" : action2};
+          $scope.updateDb(search,query,function(result){
+            if (result == true) { console.log("DB updated with backtest result") };
+          });
+          $scope.closeSocketsAndWorker(algoId,progress);
+        }
+      });
+    };
+
+
+    $scope.closeSocketsAndWorker = function(idAlgo,progressPerc){
+      setTimeout(function(){
+        var delElIndex = '';
+        $scope.activeWorker.forEach(function(val,i){
+
+          //if ($scope.dataCurrentAlgos != null || $scope.dataCurrentAlgos != undefined) {
+            if (val.algoId == idAlgo) {
+              val.progressPercentage = progressPerc;
+              $scope.backtestProgress = val.progressPercentage;
+              console.log("$scope.backtestProgress: ",$scope.backtestProgress);
+              $scope.$digest();
+            }
+          //}
+
+          if (val.algoId == idAlgo) {
+            console.log("Closing backtest sockets and worker... ");
+            val.sockPub.close();
+            val.sockSub.close();
+            val.worker.terminate();
+            delElIndex = i;
+          };
+
+          if (val.type == 'backtestFromConsole') {
+
+
+            var environment = process.env;  
+            console.log("environment: ",environment);
+            var config = {
+              cwd: 'C:/Windows/System32',
+              env: environment
+            };
+
+            cpu.totalLoad(function(error, results) {
+              if(error) {
+                return console.log(error);
+              }
+              console.log("CPU all process: ",results);
+            });
+
+            /*var query1 = 'wmic path Win32_PerfFormattedData_PerfProc_Process get Name,PercentProcessorTime | findstr /i /c:TEST1'
+            exec( query1,config, function(err, data) {  
+              console.log('error1 : ',err)
+              console.log('data1: ',data.toString() );
+            });*/
+            var algoName1 = val.algoName.split('.')[0];
+            var algoNameExtension = val.algoName.split('.')[1];
+            var algoNameEXE = algoName1+'_'+val.algoId+'.'+algoNameExtension;
+            var command1 = 'tasklist /v /fi "IMAGENAME eq '+algoNameEXE+'" /fo csv';
+            var command2 = 'taskkill /F /IM '+algoNameEXE;
+            console.log("command1: ",command1);
+            console.log("command2: ",command2);
+            console.log("algoName: ",algoNameEXE);
+
+            exec(command1,config, function(err, data) {  
+              console.log('error2 : ',err);
+              var newString = data.toString().replace(/['"]+/g, '').split('\n');
+              var mapArr = newString[0].split(',');
+              var valuesArr = newString[1].split(',');
+              console.log('data2: ',mapArr);
+              console.log('data3: ',valuesArr);
+              console.log('pid: ',valuesArr[1] );
+
+              //console.log('data3: ',data.split(','));
+              //TASKKILL /PID 1230 /PID 1241 /PID 1253 /T
+              //var command = "taskkill /pid "+valuesArr[1]+" /T";   //PID
+              
+              console.log("command2: ",command2);
+              exec(command2,config, function(err, data) {  
+                console.log("process Algo.EXE stopped/deleted");
+              });
+            }); 
+
+          };
+
+        });
+
+        $scope.activeWorker.splice(delElIndex, 1);
+
+      },1000);
+    }
+
+
     $scope.stopBacktest = function(index){
-      $scope.activeWorker[index].sockPub.close();
-      $scope.activeWorker[index].sockSub.close();
-      $scope.activeWorker[index].worker.terminate();
+
+      if ( $scope.activeWorker[index].type == 'backtestFromConsole' ){
+
+        /*worker: '',
+        sockPub: '',
+        sockSub: '',
+        pub_port: '',
+        sub_port: '',
+        type: backtestType,
+        algoId: algoId,
+        algoName: '',
+        historyLength: '',
+        progress: '',
+        progressPercentage: 0,
+        partialResult: ''*/
+
+        $scope.saveBacktestResult($scope.activeWorker[index].algoId,$scope.activeWorker[index].partialResult.d,$scope.activeWorker[index].progressPercentage);
+        console.log("event.data.algoId: ",$scope.activeWorker[index].algoId);
+        console.log("$scope.dataCurrentAlgos[_id]: ",$scope.dataCurrentAlgos["_id"]);
+        console.log("$scope.currentPage: ",$scope.currentPage);
+      }else{
+        // finish backtest
+        //send message to close matlab socket 
+        
+        var backtestResult = JSON.stringify($scope.activeWorker[index].partialResult.d);
+        console.log("backtest from client: ",backtestResult);
+        $scope.activeWorker[index].sockPub.send(['BACKTESTFINISHED',backtestResult]);
+        $scope.closeSocketsAndWorker($scope.activeWorker[index].algoId, $scope.activeWorker[index].progressPercentage);
+      }
+      //$scope.activeWorker[index].sockPub.close();
+      //$scope.activeWorker[index].sockSub.close();
+      //$scope.activeWorker[index].worker.terminate();
     }
 
     $scope.getBacktestType = function(type){
@@ -427,6 +568,17 @@ movieStubApp.controller("homeCtrl", function ($scope, $location) {
         $scope.backtestingLoading = true;
         $scope.showSummaryBacktest = false;
         $scope.backtestProgress = 0;
+
+        $scope.dataAlgos.forEach(function(val,i){
+          if (val["_id"] == $scope.dataCurrentAlgos["_id"]) {
+            val.integrationTest.ram = '0';
+            val.integrationTest.statusValue = 1;
+          };
+        });
+
+        $scope.dataCurrentAlgos.integrationTest.ram = '0';
+        $scope.dataCurrentAlgos.integrationTest.statusValue = 1;
+
       };
 
       var domain = "C:/4CastersApp/";
@@ -579,7 +731,10 @@ movieStubApp.controller("homeCtrl", function ($scope, $location) {
                       if (backtestType == 'backtestFromClient') {
                         $scope.sockPubClient.send(['BACKTESTDATAREADY','READY']);
                       }else{
-                        var algoPathForExecution = $scope.domain+algoId+'/'+algoName;
+                        //var algoNameEXE = val.algoName+'_'+val.algoId+'.exe'
+                        var algoNameEXE = algoName.split('.')[0];
+                        var algoNameExtension = algoName.split('.')[1];
+                        var algoPathForExecution = $scope.domain+algoId+'/'+algoNameEXE+'_'+algoId+'.'+algoNameExtension;
 
                         var bkCrossList = [];
                         var fullParams = '';
@@ -642,6 +797,16 @@ movieStubApp.controller("homeCtrl", function ($scope, $location) {
                             console.log('the current working dir is : ',data);
                             console.log(" start algo");
                         });
+
+                        setTimeout(function(){
+
+                          var algoName1 = $scope.dataCurrentAlgos.algoName.split('.')[0];
+                          var algoNameExtension = $scope.dataCurrentAlgos.algoName.split('.')[1];
+                          var algoNameEXE = algoName1+'_'+$scope.dataCurrentAlgos["_id"]+'.'+algoNameExtension;
+
+                          $scope.updateRamStatusAlgo(algoNameEXE);
+
+                        },2000);
                         
                         //IF MATLAB
 
@@ -652,69 +817,16 @@ movieStubApp.controller("homeCtrl", function ($scope, $location) {
                     }else if (event.data.type == 'backtestFinished') {
                       console.log('backtestFinished: ',event.data);
 
-                      var closeSocketsAndWorker = function(){
-                        setTimeout(function(){
-                          var delElIndex = '';
-                          $scope.activeWorker.forEach(function(val,i){
-
-                            if ($scope.dataCurrentAlgos != null || $scope.dataCurrentAlgos != undefined) {
-                              if (val.algoId == $scope.dataCurrentAlgos["_id"]) {
-                                val.progressPercentage = 100;
-                                $scope.backtestProgress = val.progressPercentage;
-                                console.log("$scope.backtestProgress: ",$scope.backtestProgress);
-                                $scope.$digest();
-                              }
-                            }
-
-                            if (val.algoId == event.data.algoId) {
-                              console.log("Closing backtest sockets and worker... ");
-                              val.sockPub.close();
-                              val.sockSub.close();
-                              val.worker.terminate();
-                              delElIndex = i;
-                              
-                            };
-                          });
-
-                          
-                          $scope.activeWorker.splice(delElIndex, 1);
-
-                          //current_worker.sockPub.close();
-                          //current_worker.sockSub.close();
-                          //current_worker.worker.terminate();
-                          //current_worker = null;
-
-                        },1000);
-                      }
-                      
-
-                      $scope.saveBacktestResult = function(algoId,dataBacktest){
-
-                        storedb('algos').find({"_id":algoId},function(err,result){
-                          if(err == undefined || err == null || err == ""){ 
-                            
-                            var serverName = 'integrationTest';
-                            console.log('result: ',result);
-                            result[0][serverName].backtestResult = dataBacktest;
-                            console.log('result: ',result[0][serverName]);
-                            //result[0][serverName].backtestResult = JSON.parse(result[0][serverName].backtestResult);
-
-                            $scope.dataCurrentAlgos.integrationTest.backtestResult = result[0][serverName].backtestResult;
-
-                            var search = {'_id':algoId };
-                            var action2 = {};
-                            action2[serverName] = result[0][serverName];
-                            var query = {"$set" : action2};
-                            $scope.updateDb(search,query,function(result){
-                              if (result == true) { console.log("DB updated with backtest result") };
-                            });
-                            closeSocketsAndWorker();
-                          }
-                        });
-                      };
-
                       if ( event.data.backtestType == 'backtestFromConsole' ){
-                        $scope.saveBacktestResult(event.data.algoId,event.data.d);
+
+                        var algoName1 = $scope.dataCurrentAlgos.algoName.split('.')[0];
+                        var algoNameExtension = $scope.dataCurrentAlgos.algoName.split('.')[1];
+                        var algoNameEXE = algoName1+'_'+$scope.dataCurrentAlgos["_id"]+'.'+algoNameExtension;
+
+                        $scope.updateRamStatusAlgo(algoNameEXE);
+
+
+                        $scope.saveBacktestResult(event.data.algoId,event.data.d,100);
                         console.log("event.data.algoId: ",event.data.algoId);
                         console.log("$scope.dataCurrentAlgos[_id]: ",$scope.dataCurrentAlgos["_id"]);
                         console.log("$scope.currentPage: ",$scope.currentPage);
@@ -732,7 +844,7 @@ movieStubApp.controller("homeCtrl", function ($scope, $location) {
                         var backtestResult = JSON.stringify(event.data.d);
                         console.log("backtest from client: ",backtestResult);
                         current_worker.sockPub.send(['BACKTESTFINISHED',backtestResult]);
-                        closeSocketsAndWorker();
+                        $scope.closeSocketsAndWorker( $scope.dataCurrentAlgos["_id"], 100);
                       }
 
 
@@ -1233,9 +1345,9 @@ movieStubApp.controller("homeCtrl", function ($scope, $location) {
 
 
     $scope.algo_setting = [
-      {cross: null,timeframe: 'm1', values: 'v1'},
-      {cross: null,timeframe: 'm1', values: 'v1'},
-      {cross: null,timeframe: 'm1', values: 'v1'}
+      {cross: null,timeframe: 'm1', values: 'v1', magic:''},
+      {cross: null,timeframe: 'm1', values: 'v1', magic:''},
+      {cross: null,timeframe: 'm1', values: 'v1', magic:''}
     ];
     $scope.selected_0_cross = undefined;
     $scope.selected_1_cross = undefined;
@@ -1244,42 +1356,57 @@ movieStubApp.controller("homeCtrl", function ($scope, $location) {
 
 
     $scope.permanent_algo_setting = [
-      {cross: null,timeframe: 'm1', values: 'v1'},
-      {cross: null,timeframe: 'm1', values: 'v1'},
-      {cross: null,timeframe: 'm1', values: 'v1'}
+      {cross: null,timeframe: 'm1', values: 'v1', magic:''},
+      {cross: null,timeframe: 'm1', values: 'v1', magic:''},
+      {cross: null,timeframe: 'm1', values: 'v1', magic:''}
     ];
     $scope.permanent_selected_0_cross = undefined;
     $scope.permanent_selected_1_cross = undefined;
     $scope.permanent_selected_2_cross = undefined;  
 
-    $scope.saveAlgoParam = function(){
+    $scope.saveAlgoParam = function(serverName,paramToRun){
       //$scope.permanent_algo_setting = $scope.algo_setting;
-
+      console.log("in button");
       storedb('algos').find({"_id":$scope.dataCurrentAlgos["_id"]},function(err,result){
         if(err == undefined || err == null || err == ""){ 
           
-          var serverName = 'integrationTest';
-          result[0][serverName].param = JSON.stringify($scope.algo_setting);
+          //var serverName = 'integrationTest';
+          var paramToSave = '';
+          if (paramToRun != undefined && paramToRun != '') {
+            paramToSave = paramToRun;
+          }else{
+            paramToSave = $scope.algo_setting;
+          }
+
+
+          result[0][serverName].param = JSON.stringify( paramToSave );
           result[0][serverName].param = JSON.parse(result[0][serverName].param);
 
-          $scope.dataCurrentAlgos.integrationTest.param = result[0][serverName].param;
+          $scope.dataCurrentAlgos[serverName].param = result[0][serverName].param;
 
           var search = {'_id':$scope.dataCurrentAlgos["_id"] };
           var action2 = {};
           action2[serverName] = result[0][serverName];
           var query = {"$set" : action2};
+          console.log('add values in db');
           $scope.updateDb(search,query,function(result){
             if (result == true) {
 
-              $scope.permanent_algo_setting = JSON.stringify($scope.algo_setting);
+              $scope.permanent_algo_setting = JSON.stringify( paramToSave );
+              console.log('Save param parsing0: ',$scope.permanent_algo_setting);
               $scope.permanent_algo_setting = JSON.parse($scope.permanent_algo_setting);
+              console.log('Save param parsing1: ',$scope.permanent_algo_setting);
+              console.log('Save param parsing magic: ',$scope.permanent_algo_setting[0].magic);
               $scope.permanent_selected_0_cross = $scope.selected_0_cross;
               $scope.permanent_selected_1_cross = $scope.selected_1_cross;
               $scope.permanent_selected_2_cross = $scope.selected_2_cross;
 
-
+              $scope.$digest();
               //BUILD ALGO....THEN:
-                $scope.configurationAlgo("","integration");
+              if (serverName == 'integrationTest') {
+                $scope.configurationAlgo("","integration");  
+              };
+              
 
             }
           });
@@ -1324,9 +1451,10 @@ movieStubApp.controller("homeCtrl", function ($scope, $location) {
     $scope.firstAction = "";
     $scope.configurationAlgo = function(event,action,type) {
       //event.stopPropagation();
+      console.log("config algo");
       if (action == 'integration' && $scope.firstAction == "") {
         $scope.onlyReadConf = false;
-      }else if ( $scope.firstAction == ""){
+      }else if ( action == 'betaTest' || action == 'prod'){
         $scope.onlyReadConf = true;
       }
       if ($scope.openPanel_confAlgo == false && $scope.show_conf_app_panel == true && $scope.firstAction == "") {
@@ -1401,6 +1529,7 @@ movieStubApp.controller("homeCtrl", function ($scope, $location) {
       algoImgName : 'Algorithm image',
       algoImgPath : '',
       algoName : '',
+      algoNameEXE: '',
       algoType : 'Algorithm type',
       algoFileName : '',
       algo_version: 0,
@@ -1673,6 +1802,7 @@ movieStubApp.controller("homeCtrl", function ($scope, $location) {
                       local_algos[key1]['algo_version'] = value2['algo_version'];
                       local_algos[key1]['algoImgPath'] = value2['algoImgPath'];
                       local_algos[key1]['algoName'] = value2['algoName'];
+                      local_algos[key1]['algoNameEXE'] = value2['algoNameEXE'];
                       local_algos[key1]['algoType'] = value2['algoType'];
                       local_algos[key1]['algoFileName'] = value2['algoFileName'];
                       local_algos[key1]['algo_version'] = value2['algo_version'];
@@ -1689,7 +1819,7 @@ movieStubApp.controller("homeCtrl", function ($scope, $location) {
                           var query2 = {"$set" : action2};
                           updateDb(search,query2,function(result){
                             if (result == true) {
-                              var action3 = { 'algoImgName':value2.algoImgName,'algo_version':value2.algo_version, 'algoImgPath':value2.algoImgPath, 'algoName':value2.algoName, 'algoType':value2.algoType, 'algoFileName':value2.algoFileName, 'algo_version':value2.algo_version};
+                              var action3 = { 'algoImgName':value2.algoImgName,'algo_version':value2.algo_version, 'algoImgPath':value2.algoImgPath, 'algoName':value2.algoName, 'algoNameEXE':value2.algoNameEXE, 'algoType':value2.algoType, 'algoFileName':value2.algoFileName, 'algo_version':value2.algo_version};
                               var query4 = {"$set" : action3};
                               updateDb(search,query4,function(result){
                                 if (result == true) {
@@ -1882,6 +2012,7 @@ movieStubApp.controller("homeCtrl", function ($scope, $location) {
             algoImgName : 'Algorithm image',
             algoImgPath : '',
             algoName : '',
+            algoNameEXE: '',
             algoType : 'Algorithm type',
             algoFileName : '',
             algo_version: 0,
@@ -1961,9 +2092,11 @@ movieStubApp.controller("homeCtrl", function ($scope, $location) {
 
                         fs.readdir($scope.domain+'tempFile/', function(err, items) {    
                           if(err == undefined || err == null || err == ""){               
-                            console.log(items[0]);
+                            console.log('file name: ',items[0]);
+                            var itemName = items[0].split('.')[0];
+                            var itemExtension = items[0].split('.')[1];
                             //$scope.moveFile
-                            mv($scope.domain+'tempFile/'+items[0], $scope.domain+hash+"/"+items[0], function(err) {
+                            mv($scope.domain+'tempFile/'+items[0], $scope.domain+hash+"/"+itemName+'_'+hash+'.'+itemExtension, function(err) {
                               console.log("err: ",err);
                               if(err == undefined || err == null || err == ""){
                                 $scope.deletAllFilesInFolder($scope.domain+'tempFile');
@@ -1991,6 +2124,7 @@ movieStubApp.controller("homeCtrl", function ($scope, $location) {
                                         algoImgName : 'Algorithm image',
                                         algoImgPath : '',
                                         algoName : '',
+                                        algoNameEXE: '',
                                         algoType : 'Algorithm type',
                                         algoFileName : '',
                                         algo_version: 0,
@@ -2067,6 +2201,15 @@ movieStubApp.controller("homeCtrl", function ($scope, $location) {
       $scope.currentAlgosIndex = index;
       $scope.dataCurrentAlgos = $scope.dataAlgos[index];
       $scope.showAlgo = true;
+
+      var algoName1 = $scope.dataCurrentAlgos.algoName.split('.')[0];
+      var algoNameExtension = $scope.dataCurrentAlgos.algoName.split('.')[1];
+      var algoNameEXE = algoName1+'_'+$scope.dataCurrentAlgos["_id"]+'.'+algoNameExtension;
+
+      $scope.updateRamStatusAlgo(algoNameEXE);
+      
+
+
       storedb('algos').find({"_id":$scope.dataCurrentAlgos["_id"]},function(err,result){
         if(err == undefined || err == null || err == ""){  
           var serverName = 'integrationTest';
@@ -2313,6 +2456,116 @@ movieStubApp.controller("homeCtrl", function ($scope, $location) {
       $(e.currentTarget).find("img.algo_client_logo").animate({'margin-top':'0px'}, 200);
     }
 
+    $scope.updateRamStatusAlgo = function(algoNameEXE){
+
+
+      var environment = process.env;  
+      console.log("environment: ",environment);
+      var config = {
+        cwd: 'C:/Windows/System32',
+        env: environment
+      };
+
+      var command1 = 'tasklist /v /fi "IMAGENAME eq '+algoNameEXE+'" /fo csv';  
+      console.log("command1: ",command1);
+
+      exec(command1,config, function(err, data) {  
+        console.log('error2 : ',err);
+        console.log('data algo exe: ',data);
+
+        var checkVal = data.toString().search(algoNameEXE);
+        console.log('checkVal: '+checkVal);
+
+        if (checkVal == '-1') {
+          //get value from DB
+          console.log('algo exe is not running, updating Ram, statusValue, statusLabel values');
+          storedb('algos').find({"_id":$scope.dataCurrentAlgos["_id"]},function(err,result){
+            if(err == undefined || err == null || err == ""){ 
+
+              $scope.dataCurrentAlgos.integrationTest.ram = result[0].integrationTest.ram;
+              $scope.dataCurrentAlgos.integrationTest.statusValue = 0;
+              $scope.dataCurrentAlgos.integrationTest.statusLabel = 'ToDo';
+              $scope.dataAlgos.forEach(function(val,i){
+              if (val["_id"] == $scope.dataCurrentAlgos["_id"]) {
+                  val.integrationTest.ram = result[0].integrationTest.ram;
+                  val.integrationTest.statusValue = 0;
+                  val.integrationTest.statusLabel = 'ToDo';
+                };
+              });
+
+              $scope.$digest();
+
+              result[0].integrationTest.ram = valuesArr[5];
+              result[0].integrationTest.statusValue = 0;
+              result[0].integrationTest.statusLabel = 'ToDo';
+
+              var search = {'_id':$scope.dataCurrentAlgos["_id"] };
+              var action = {};
+              action['integrationTest'] = result[0].integrationTest;
+              var query = {"$set" : action};
+              console.log('updating DB...');
+              $scope.updateDb(search,query,function(result){
+                
+                if (result == true) {
+                  console.log("Successful, uploaded Running status ",result);
+                }
+              });
+
+             
+            }
+          });
+        }else{
+
+          console.log('algo exe is running, updating Ram, statusValue, statusLabel values');
+          var newString = data.toString().replace(/['"]+/g, '').split('\n');
+          var mapArr = newString[0].split(',');
+          var valuesArr = newString[1].split(',');
+          console.log('data2: ',mapArr);
+          console.log('data3: ',valuesArr);
+          console.log('status: ',valuesArr[6] );
+          if (valuesArr[6] == 'Running') {
+            console.log('RAM: ',valuesArr[5] );
+            $scope.dataAlgos.forEach(function(val,i){
+              if (val["_id"] == $scope.dataCurrentAlgos["_id"]) {
+                val.integrationTest.ram = valuesArr[5];
+                val.integrationTest.statusValue = 1;
+                val.integrationTest.statusLabel = 'Running';
+              };
+            });
+            $scope.dataCurrentAlgos.integrationTest.ram = valuesArr[5];
+            $scope.dataCurrentAlgos.integrationTest.statusValue = 1;
+            $scope.dataCurrentAlgos.integrationTest.statusLabel = 'Running';
+
+            //update also the db
+            console.log('$scope.dataCurrentAlgos["_id"]: ',$scope.dataCurrentAlgos["_id"]);
+            storedb('algos').find({"_id":$scope.dataCurrentAlgos["_id"]},function(err,result){
+              if(err == undefined || err == null || err == ""){ 
+
+                result[0].integrationTest.ram = valuesArr[5];
+                result[0].integrationTest.statusValue = 1;
+                result[0].integrationTest.statusLabel = 'Running';
+
+                var search = {'_id':$scope.dataCurrentAlgos["_id"] };
+                var action = {};
+                action['integrationTest'] = result[0].integrationTest;
+                var query = {"$set" : action};
+                console.log('updating DB...');
+                $scope.updateDb(search,query,function(result){
+                  
+                  if (result == true) {
+                    console.log("Successful, uploaded Running status ",result);
+                  }
+                });
+              }
+            });
+            
+
+          };
+        }
+      });
+
+    }
+
 
     $scope.currentPage = '';
     $scope.getPage = function(page){
@@ -2332,6 +2585,18 @@ movieStubApp.controller("homeCtrl", function ($scope, $location) {
         $('#container_algo_setting').hide();
         $('#container_backtest_list').hide();
         $('#container').show();
+
+        if ($scope.dataCurrentAlgos.algoName != undefined && $scope.dataCurrentAlgos.algoName != '' &&  $scope.dataCurrentAlgos["_id"] != undefined &&  $scope.dataCurrentAlgos["_id"] != '') {
+       
+          var algoName1 = $scope.dataCurrentAlgos.algoName.split('.')[0];
+          var algoNameExtension = $scope.dataCurrentAlgos.algoName.split('.')[1];
+          var algoNameEXE = algoName1+'_'+$scope.dataCurrentAlgos["_id"]+'.'+algoNameExtension;
+
+          $scope.updateRamStatusAlgo(algoNameEXE);
+
+        }
+
+
       }else if (page == 'createAlgo') {
         $scope.backtestPage = false;
         $('#container_algo_backtest_detail').hide();
@@ -2357,7 +2622,8 @@ movieStubApp.controller("homeCtrl", function ($scope, $location) {
         var foundBacktestRunning = false;
         $scope.activeWorker.forEach(function(val,i){
           if ($scope.dataCurrentAlgos != null || $scope.dataCurrentAlgos != undefined) {
-            if (val.algoId == $scope.dataCurrentAlgos["_id"]) {
+            console.log('val.progressPercentage: ',val.progressPercentage);
+            if (val.algoId == $scope.dataCurrentAlgos["_id"] && val.progressPercentage != 100) {
               foundBacktestRunning = true;
               console.log("Updating backtest progress... ");
               $scope.backtestingLoading = true;
@@ -2369,11 +2635,13 @@ movieStubApp.controller("homeCtrl", function ($scope, $location) {
         });
 
         if (!foundBacktestRunning) {
+          $scope.backtestingLoading = false;
+          $scope.showSummaryBacktest = true;
           storedb('algos').find({"_id":$scope.dataCurrentAlgos["_id"]},function(err,result){
             if(err == undefined || err == null || err == ""){ 
               var serverName = 'integrationTest';
               console.log( 'resultBacktest: ', result[0][serverName].backtestResult ); 
-              $scope.showBacktestResult(result[0].algoId,result[0].algoName,result[0][serverName].backtestResult);
+              $scope.showBacktestResult($scope.dataCurrentAlgos["_id"],result[0].algoName,result[0][serverName].backtestResult);
             }
           });
         };
@@ -3068,11 +3336,13 @@ movieStubApp.controller("homeCtrl", function ($scope, $location) {
                 },4000);*/
                 console.log("$scope.dataCurrentAlgos: ",$scope.dataCurrentAlgos);
                 var algoName = $scope.dataCurrentAlgos.algoName;
-                var algoPath = $scope.dataCurrentAlgos.algoFileName;
                 var algoId = $scope.dataCurrentAlgos['_id'];
                 console.log("algo name: ",algoName);
 
                 //INSERT CHECK IF FILE EXIST
+                var algoName1 = $scope.dataCurrentAlgos.algoName.split('.')[0];
+                var algoNameExtension = $scope.dataCurrentAlgos.algoName.split('.')[1];
+                var algoPath = algoName1+'_'+algoId+'.'+algoNameExtension;
 
                 var rd_file = fs.createReadStream($scope.domain+algoId+'/'+algoPath);
                 rd_file.on("error", function(err) {
@@ -3362,13 +3632,18 @@ movieStubApp.controller("homeCtrl", function ($scope, $location) {
                   });
                 },4000);*/
                 console.log("$scope.dataCurrentAlgos: ",$scope.dataCurrentAlgos);
-                var algoName = $scope.dataCurrentAlgos.algoName;
-                var algoPath = $scope.dataCurrentAlgos.algoFileName;
+                //var algoName = $scope.dataCurrentAlgos.algoName;
+                //var algoPath = $scope.dataCurrentAlgos.algoFileName;
                 var algoId = $scope.dataCurrentAlgos['_id'];
-                console.log("algo name: ",algoName);
+                var algoName1 = $scope.dataCurrentAlgos.algoName.split('.')[0];
+                var algoNameExtension = $scope.dataCurrentAlgos.algoName.split('.')[1];
+                var algoPath = algoName1+'_'+algoId+'.'+algoNameExtension;
+                console.log("algo name1: ",algoName1);
 
                 //INSERT CHECK IF FILE EXIST
 
+                
+                console.log('path upload algo prod: ',$scope.domain+algoId+'/'+algoPath);
                 var rd_file = fs.createReadStream($scope.domain+algoId+'/'+algoPath);
                 rd_file.on("error", function(err) {
                   console.log("error read file: ",err);
@@ -3406,7 +3681,7 @@ movieStubApp.controller("homeCtrl", function ($scope, $location) {
 
                 });
                 rd_file.on('data',function(data){
-                  //console.log("reading file: ",data.length);
+                  console.log("reading file: ",data.length);
                 });
 
                 //var serverName = '';
@@ -3957,21 +4232,67 @@ console.log("algoDetail_prodServer: ",algoDetail_prodServer);
     };
 
 
+    
+    $scope.$watch("dataCurrentAlgos.betaTest.param",function(){
+      $scope.paramSerialized = '';
+      console.log("$scope.dataCurrentAlgos.betaTest.param: ",$scope.dataCurrentAlgos.betaTest.param);
+      if ( $scope.dataCurrentAlgos.betaTest.param != undefined &&  $scope.dataCurrentAlgos.betaTest.param != '--') {
+        if ( $scope.dataCurrentAlgos.betaTest.param.length > 0 ) {
+          $scope.dataCurrentAlgos.betaTest.param.forEach(function(val,i){
+            if (val.cross != null) {
+              var partialString = '';
+              if ($scope.paramSerialized == '') {
+                partialString = val.cross+'-'+val.timeframe+'-'+val.values;
+              }else{
+                partialString = ' '+val.cross+'-'+val.timeframe+'-'+val.values;
+              }
+              $scope.paramSerialized = $scope.paramSerialized + partialString;
+            }
+          });
+        };
+      };
+    });
+    
+    $scope.serializeParams = function(param){
+      var paramSerialized = '';
+      param.forEach(function(val,i){
+        if (val.cross != null) {
+          var partialString = '';
+          if (paramSerialized == '') {
+            console.log('magic: ',val.magic);
+            var magicString = parseInt(val.magic).toString();
+            console.log('magicString: ',magicString);
+            partialString = magicString+'_'+val.cross+'@'+val.timeframe+'@'+val.values;
+          }else{
+            partialString = '$'+val.cross+'@'+val.timeframe+'@'+val.values;
+          }
+          paramSerialized = paramSerialized + partialString;
+        }
+        console.log("paramSerialized: ",paramSerialized);
+      });
+      return paramSerialized;
+    };
+
     $scope.startAlgo = function(serverName){
+
+      console.log("$scope.permanent_algo_setting: ",$scope.permanent_algo_setting);
+      var paramForRunning_0 = $scope.algo_setting;
+      var paramForRunning = $scope.serializeParams($scope.permanent_algo_setting);
 
       if ( !$scope.dataCurrentAlgos[serverName].actionStart && $scope.dataCurrentAlgos[serverName].actionDeploy && $scope.dataCurrentAlgos[serverName].actionStop) {
 
         var tmpAlgoId = $scope.dataCurrentAlgos['_id'];
         var tmpLocalLastAlgoVersion = $scope.dataCurrentAlgos['algo_version'];
 
+        console.log("paramForRunning: ",paramForRunning);
         var url = '';
         if (serverName == 'betaTest') {
-          url = $scope.ipServer+'/startAlgoOnBeta?tmpAlgoId='+tmpAlgoId+"&localLastAlgoVersion="+tmpLocalLastAlgoVersion+"&prodServer=false&remoteServerURL=";
+          url = $scope.ipServer+'/startAlgoOnBeta?tmpAlgoId='+tmpAlgoId+"&localLastAlgoVersion="+tmpLocalLastAlgoVersion+"&prodServer=false&paramForRunning="+paramForRunning+"&remoteServerURL=";
           if ($scope.ipProdServer) {
-            url = $scope.ipServer+'/startAlgoOnBeta?tmpAlgoId='+tmpAlgoId+"&localLastAlgoVersion="+tmpLocalLastAlgoVersion+"&prodServer=true&remoteServerURL="+$scope.ipProdServer;
+            url = $scope.ipServer+'/startAlgoOnBeta?tmpAlgoId='+tmpAlgoId+"&localLastAlgoVersion="+tmpLocalLastAlgoVersion+"&prodServer=true&paramForRunning="+paramForRunning+"&remoteServerURL="+$scope.ipProdServer;
           };
         }else if (serverName == 'prod') {
-          url = $scope.ipProdServer+'/startAlgoOnProd?tmpAlgoId='+tmpAlgoId+"&localLastAlgoVersion="+tmpLocalLastAlgoVersion+"&betaServer=true&remoteServerURL="+$scope.ipServer;
+          url = $scope.ipProdServer+'/startAlgoOnProd?tmpAlgoId='+tmpAlgoId+"&localLastAlgoVersion="+tmpLocalLastAlgoVersion+"&betaServer=true&paramForRunning="+paramForRunning+"&remoteServerURL="+$scope.ipServer;
         };
 
         $scope.checkAlgoSyncServers(tmpAlgoId,tmpLocalLastAlgoVersion,function(result){
@@ -4031,7 +4352,12 @@ console.log("algoDetail_prodServer: ",algoDetail_prodServer);
                               $scope.dataCurrentAlgos[serverName].actionStop = false;
                               $scope.dataCurrentAlgos[serverName].statusValue = "2";
                               $scope.dataCurrentAlgos[serverName].statusLabel = "Running";
-                              $scope.$digest();
+                              console.log('paramForRunning_0: ',paramForRunning_0);
+                              $scope.dataCurrentAlgos[serverName].param = paramForRunning_0;
+
+                              $scope.saveAlgoParam(serverName,paramForRunning_0);
+
+                              
 
                               console.log("Success, algo_version,betaTest obj were updated on local pc, beta server and prod server");
                             }else{
