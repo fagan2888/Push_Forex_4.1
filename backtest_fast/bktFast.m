@@ -152,7 +152,7 @@ classdef bktFast < handle
                 
                 % display partial results of optimization
                 [current_best,ind_best] = max(obj.R_over_maxDD(n,:));
- 
+                
                 % perform paper trading and show results only if R/maxDD is decent
                 if max(obj.R_over_maxDD(n,:)) > 0.8
                     
@@ -421,6 +421,102 @@ classdef bktFast < handle
             
         end % end of function plotme
         
+        
+        
+        function [obj] = shakeme(obj,parameters)
+            
+            % DESCRIPTION:
+            % -------------------------------------------------------------
+            % Performs runs of the specified algorithm on a perturbed historical data
+            % and compare results overplotting them on a single plot
+            %
+            %
+            % How to use it:
+            %
+            % test = bktFast;
+            % test = test.shakeme('parameters_file.txt')
+            %
+            % -------------------------------------------------------------
+            
+            
+            %% Import parameters:
+            
+            fid=fopen(parameters);
+            C = textscan(fid, '%s', 'Delimiter', '', 'CommentStyle', '%');
+            fclose(fid);
+            cellfun(@eval, C{1});
+            
+            
+            algo = str2func(nameAlgo);
+            
+            figure
+            hold on
+            
+            stepStrength = 0:0.2:1;
+            Legend = cell( length(6), 1); % dev'esser lungo come i cicli di strength
+            LegNum=1;
+            
+            i = 1;
+            RoverMaxDD = zeros(6,1);
+            numOperations = zeros(6,1);
+            pipsEarned = zeros(6,1);
+            avgPipsOper = zeros(6,1);
+            
+            for strength = stepStrength
+                
+                % Load and perturb historica
+                [hisDataNoise, newHisDataNoise] = load_historical_and_add_noise(histName, actTimeScale, newTimeScale,strength);
+                
+                display(['strength =', num2str(strength)]);
+                
+                
+                if( N_greater_than_M && n<=m )
+                    continue
+                end
+                
+                obj.bktfastTry = feval(algo);
+                obj.bktfastTry = obj.bktfastTry.spin(hisDataNoise(:,4), newHisDataNoise, actTimeScale, newTimeScale, N, M, transCost, pips_TP, pips_SL, stdev_TP, stdev_SL, 0);
+                
+                p = Performance_06;
+                performance = p.calcSinglePerformance(nameAlgo,'bktWeb',histName,Cross,newTimeScale,transCost,10000,10,obj.bktfastTry.outputbkt,0);
+                
+                % save results
+                RoverMaxDD(i) = performance.pipsEarned / abs(performance.maxDD_pips);
+                numOperations(i) = obj.bktfastTry.indexClose;
+                pipsEarned(i) = performance.pipsEarned;
+                avgPipsOper(i) = pipsEarned(i)/numOperations(i);
+                i = i+1;
+                
+                % plot profits together
+                plot(cumsum(obj.bktfastTry.outputbkt(:,4).*obj.bktfastTry.outputbkt(:,6) - transCost),'color',rand(1,3))
+                Legend{LegNum}=num2str(strength);
+                LegNum= LegNum+1;
+                
+                
+                legend(Legend)
+                title('Cumulative Results of various trials with different historical perturbations')
+                
+            end
+            
+            % plot metrics for comparison:
+            figure
+            subplot(2,2,1);
+            scatter(stepStrength,RoverMaxDD,'filled')
+            title('R/maxDD')
+            hold on
+            subplot(2,2,2);
+            scatter(stepStrength,numOperations,'filled')
+            title('num Operations')
+            subplot(2,2,3);
+            scatter(stepStrength,pipsEarned,'filled')
+            title('pips Earned')
+            subplot(2,2,4);
+            scatter(stepStrength,avgPipsOper,'filled')
+            title('avg Pips per Operaz')
+            
+            
+            
+        end % end of function shakeme
         
     end % end of methods
     
