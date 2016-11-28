@@ -79,6 +79,17 @@ classdef Performance_08 < handle
         aveExRetPos;
         aveExRetNeg;
         
+        nLong
+        percLong;
+        percLongPos;
+        percLongNeg;
+        nShort
+        percShort;
+        percShortPos;
+        percShortNeg;
+        aveExRetLong;
+        aveExRetShort;
+        
         drawDown_pips;
         maxDD_pips;
         minDD_pips;
@@ -763,22 +774,46 @@ classdef Performance_08 < handle
         function obj=RicciRatio(obj)
             
             indx =  find(obj.inputResultsMatrix(:,6));
-            Returns=obj.inputResultsMatrix(indx,4); %#ok<*FNDSB>
+            Returns = obj.inputResultsMatrix(indx,4); %#ok<*FNDSB>          
             ExReturns=Returns-obj.transCost;
-            
-            [ip,~,~] = find(ExReturns>0);
+
+            [ip,~,~] = find(ExReturns>=0);
             [in,~,~] = find(ExReturns<0);
+            [iLong,~,~]  = find(obj.inputResultsMatrix(indx,5)>0);
+            [iShort,~,~] = find(obj.inputResultsMatrix(indx,5)<0);
             
             P=(ExReturns(ip));
             N=(ExReturns(in));
-            
             aveP=mean(P);
             aveN=mean(N);
             
+            long = (ExReturns(iLong));
+            short = (ExReturns(iShort));
+            [iLongPos,~,~]  = find(long>=0);
+            [iLongNeg,~,~]  = find(long<0);
+            [iShortPos,~,~] = find(short>=0);
+            [iShortNeg,~,~] = find(short<0);           
+            longPos  = (long(iLongPos));
+            longNeg  = (long(iLongNeg));
+            shortPos = (long(iShortPos));
+            shortNeg = (long(iShortNeg));
+            obj.aveExRetLong  = mean(long);
+            obj.aveExRetShort = mean(short);
+            
+            obj.nLong  = length(long);
+            obj.nShort = length(short);
+            ntot       = obj.nLong + obj.nShort;
+                  
             %percentuali performance
             rP=length(P)*100/(length(P)+length(N));
             rN=length(N)*100/(length(P)+length(N));
-            
+            obj.percLong     = obj.nLong*100/(ntot);
+            obj.percShort    = obj.nShort*100/(ntot);
+            obj.percLongPos  = length(longPos)*100/(length(longPos)+length(longNeg));
+            obj.percLongNeg  = length(longNeg)*100/(length(longPos)+length(longNeg));
+            obj.percShortPos = length(shortPos)*100/(length(shortPos)+length(shortNeg));
+            obj.percShortNeg = length(shortNeg)*100/(length(shortPos)+length(shortNeg));
+
             %percentuali pesate con il guadagno
             rwP=rP*aveP*100/(rP*aveP+rN*abs(aveN));
             rwN=abs(rN*aveN)*100/(rP*aveP+rN*abs(aveN));
@@ -792,7 +827,7 @@ classdef Performance_08 < handle
             obj.percWeExRetNeg=rwN;
             obj.aveExRetPos=aveP;
             obj.aveExRetNeg=aveN;
-            
+                    
         end
         
         
