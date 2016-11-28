@@ -32,13 +32,14 @@ function [hisData, newHisData] = load_historical_and_add_noise(histName, actTime
                 hisData(j,6) = hisData(1,6) + ( (actTimeScale/1440)*(j-1) );
             end
             
-            volatility_open = movingstd(hisData(:,1),5,'central');
-            volatility_max = movingstd(hisData(:,2),5,'central');
-            volatility_min = movingstd(hisData(:,3),5,'central');
-            volatility_close = movingstd(hisData(:,4),5,'central');
-            volatility_vol = movingstd(hisData(:,5),5,'central');
+            volatility_open = min( movingstd(hisData(:,1),10,'central') , 10 );
+            volatility_max = min( movingstd(hisData(:,2),10,'central') , 10);
+            volatility_min = min( movingstd(hisData(:,3),10,'central') , 10);
+            volatility_close = min( movingstd(hisData(:,4),10,'central') , 10);
+            volatility_vol = movingstd(hisData(:,5),10,'central');
             
-            randomvec = 2*rand(size(hisData(:,1))) - 1;
+            %randomvec = 2*rand(size(hisData(:,1))) - 1;
+            randomvec = randn(size(hisData(:,1))) ;
             
             hisData(:,1) = hisData(:,1) + floor(randomvec .* (randomStrength * volatility_open) );
             hisData(:,2) = hisData(:,2) + floor(randomvec .* (randomStrength * volatility_max));
