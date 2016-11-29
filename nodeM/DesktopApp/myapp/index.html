@@ -675,7 +675,7 @@
             <span style="color:#fff">1.</span>
             <!--<input type="cross" ng-model="crossValue" class="form-control" placeholder="Cross" style="width:100px;border:0px solid #fff;border-radius:0px">-->
             <div class="btn-group">
-              <input type="text" placeholder="Cross" ng-model="selected_0_cross" typeahead-on-select="changeCross($item, $model, $label,0)" uib-typeahead="cross for cross in cross_list | filter:$viewValue | limitTo:8" class="form-control" style="width:100px;border-radius:0px;border:0px solid #fff">
+              <input type="text" placeholder="Cross" ng-model="selected_0_cross" typeahead-no-results='NOCROSS0'  typeahead-on-select="changeCross($item, $model, $label,0)" uib-typeahead="cross for cross in cross_list | filter:$viewValue | limitTo:8" class="form-control" style="width:100px;border-radius:0px;border:0px solid #fff">
             </div>
             <div class="btn-group" uib-dropdown  on-toggle="toggled(open)">
 
@@ -705,7 +705,7 @@
             <span style="color:#fff">2.</span>
             <!--<input type="cross" ng-model="crossValue" class="form-control" placeholder="Cross" style="width:100px;border:0px solid #fff;border-radius:0px">-->
             <div class="btn-group">
-              <input type="text" placeholder="Cross" ng-model="selected_1_cross" typeahead-on-select="changeCross($item, $model, $label,1)" uib-typeahead="cross for cross in cross_list | filter:$viewValue | limitTo:8" class="form-control" style="width:100px;border-radius:0px;border:0px solid #fff">
+              <input type="text" placeholder="Cross" ng-model="selected_1_cross" typeahead-no-results='NOCROSS1' typeahead-on-select="changeCross($item, $model, $label,1)" uib-typeahead="cross for cross in cross_list | filter:$viewValue | limitTo:8" class="form-control" style="width:100px;border-radius:0px;border:0px solid #fff">
             </div>
             <div class="btn-group" uib-dropdown  on-toggle="toggled(open)">
 
@@ -735,7 +735,7 @@
             <span style="color:#fff">3.</span>
             <!--<input type="cross" ng-model="crossValue" class="form-control" placeholder="Cross" style="width:100px;border:0px solid #fff;border-radius:0px">-->
             <div class="btn-group">
-              <input type="text" placeholder="Cross" ng-model="selected_2_cross" typeahead-on-select="changeCross($item, $model, $label,2)" uib-typeahead="cross for cross in cross_list | filter:$viewValue | limitTo:8" class="form-control" style="width:100px;border-radius:0px;border:0px solid #fff">
+              <input type="text" placeholder="Cross" ng-model="selected_2_cross" typeahead-no-results='NOCROSS2' typeahead-on-select="changeCross($item, $model, $label,2)" uib-typeahead="cross for cross in cross_list | filter:$viewValue | limitTo:8" class="form-control" style="width:100px;border-radius:0px;border:0px solid #fff">
             </div>
             <div class="btn-group" uib-dropdown  on-toggle="toggled(open)">
 

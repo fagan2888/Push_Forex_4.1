@@ -7,6 +7,7 @@ var serverName = "betaTest";
 var mv = require('mv');
 var request = require('request');
 var execFile = require('child_process').execFile;
+var exec = require('child_process').exec;
 
 console.log("start");
 
@@ -2200,37 +2201,58 @@ app.get('/stopAlgoOnBeta', function(req, res) {
           res.status(200).send({error:1,msg:"Error to stop Algo",algoId:algoId}); 
         }else{
 
-          docs[0]['betaTest'].statusLabel = "Stopped";
-          docs[0]['betaTest'].statusValue = "3";
-          docs[0]['betaTest'].actionStart = false;
-          docs[0]['betaTest'].actionStop = true;
 
-          updateSetting(docs[0]['_id'],docs[0]['betaTest'],docs[0].algo_version,'betaTest',function(){
-            if(prodServer == 'true' && remoteServerURL != "") {
-              // PROD SERVER IS DEFINED - GOING TO UPDATE SETTING ON PROD SERVER
-              var options = {
-                url : remoteServerURL+'/updateSettingStartStopAlgo?tmpAlgoId='+algoId+"&localLastAlgoVersion="+docs[0].algo_version+"&serverName=betaTest&statusLabel=Stopped&statusValue=3&actionStart=false&actionStop=true",
-              };
-              request(options, function (error, response, body) {
-                console.log("error: ",error);
-                var body = JSON.parse(body);
-                if (!error && response.statusCode == 200 && body.error == '0') {
-                  //NEW ALGO UPLOADED - GOING TO ANSWEAR TO CLIENT 200 OK
-                  var hed = {"status":"200","msg":"Algo stopped on beta server. Setting updated on Prod server"};
-                  res.set('response-msg', JSON.stringify(hed));
-                  res.status(200).send({error:0,msg:"Algo stopped on beta server and updated setting on prod",algoId:algoId,new_algo_version:docs[0].algo_version}); 
-                }else{
-                  var hed = {"status":"200","msg":"Algorithm stopped on Beta Server, Error to update prod server setting."};
-                  res.set('response-msg', JSON.stringify(hed));
-                  res.status(200).send({error:0,msg:"Algorithm stopped on Beta Server, Error to update prod server setting.  ",algoId:algoId,new_algo_version:docs[0].algo_version}); 
-                }
-              });
-            }else{
-              var hed = {"status":"200","msg":"Algorithm stopped on Beta Server"};
-              res.set('response-msg', JSON.stringify(hed));
-              res.status(200).send({error:0,msg:"Algo stopped on beta server: ",algoId:algoId,new_algo_version:docs[0].algo_version}); 
-            }
-          }); 
+
+
+          var algoName1 = docs[0]['algoName'].split('.')[0];
+          var algoNameExtension = docs[0]['algoName'].split('.')[1];
+          var algoNameEXE = algoName1+'_'+docs[0]['_id']+'.'+algoNameExtension;
+          //var command1 = 'tasklist /v /fi "IMAGENAME eq '+algoNameEXE+'" /fo csv';
+          var command2 = 'taskkill /F /IM '+algoNameEXE;
+          //console.log("command1: ",command1);
+          console.log("command2: ",command2);
+          console.log("algoName: ",algoNameEXE);
+          exec(command2, function(err, data) {  
+            console.log("process Algo.EXE stopped/deleted");
+            docs[0]['betaTest'].statusLabel = "Stopped";
+            docs[0]['betaTest'].statusValue = "3";
+            docs[0]['betaTest'].actionStart = false;
+            docs[0]['betaTest'].actionStop = true;
+
+            updateSetting(docs[0]['_id'],docs[0]['betaTest'],docs[0].algo_version,'betaTest',function(){
+              if(prodServer == 'true' && remoteServerURL != "") {
+                // PROD SERVER IS DEFINED - GOING TO UPDATE SETTING ON PROD SERVER
+                var options = {
+                  url : remoteServerURL+'/updateSettingStartStopAlgo?tmpAlgoId='+algoId+"&localLastAlgoVersion="+docs[0].algo_version+"&serverName=betaTest&statusLabel=Stopped&statusValue=3&actionStart=false&actionStop=true",
+                };
+                request(options, function (error, response, body) {
+                  console.log("error: ",error);
+                  var body = JSON.parse(body);
+                  if (!error && response.statusCode == 200 && body.error == '0') {
+                    //NEW ALGO UPLOADED - GOING TO ANSWEAR TO CLIENT 200 OK
+                    var hed = {"status":"200","msg":"Algo stopped on beta server. Setting updated on Prod server"};
+                    res.set('response-msg', JSON.stringify(hed));
+                    res.status(200).send({error:0,msg:"Algo stopped on beta server and updated setting on prod",algoId:algoId,new_algo_version:docs[0].algo_version}); 
+                  }else{
+                    var hed = {"status":"200","msg":"Algorithm stopped on Beta Server, Error to update prod server setting."};
+                    res.set('response-msg', JSON.stringify(hed));
+                    res.status(200).send({error:0,msg:"Algorithm stopped on Beta Server, Error to update prod server setting.  ",algoId:algoId,new_algo_version:docs[0].algo_version}); 
+                  }
+                });
+              }else{
+                var hed = {"status":"200","msg":"Algorithm stopped on Beta Server"};
+                res.set('response-msg', JSON.stringify(hed));
+                res.status(200).send({error:0,msg:"Algo stopped on beta server: ",algoId:algoId,new_algo_version:docs[0].algo_version}); 
+              }
+            }); 
+
+          });
+
+
+
+
+
+          
         }              
       }else{
         var hed = {"status":"400","msg":" to stop algo"};
@@ -2311,37 +2333,62 @@ app.get('/stopAlgoOnProd', function(req, res) {
           res.status(200).send({error:1,msg:"Error to stop Algo",algoId:algoId}); 
         }else{
 
-          docs[0]['prod'].statusLabel = "Stopped";
-          docs[0]['prod'].statusValue = "3";
-          docs[0]['prod'].actionStart = false;
-          docs[0]['prod'].actionStop = true;
 
-          updateSetting(docs[0]['_id'],docs[0]['prod'],docs[0].algo_version,'prod',function(){
-            if(betaServer == 'true' && remoteServerURL != "") {
-              // PROD SERVER IS DEFINED - GOING TO UPDATE SETTING ON PROD SERVER
-              var options = {
-                url : remoteServerURL+'/updateSettingStartStopAlgo?tmpAlgoId='+algoId+"&localLastAlgoVersion="+docs[0].algo_version+"&serverName=prod&statusLabel=Stopped&statusValue=3&actionStart=false&actionStop=true",
-              };
-              request(options, function (error, response, body) {
-                console.log("error: ",error);
-                var body = JSON.parse(body);
-                if (!error && response.statusCode == 200 && body.error == '0') {
-                  //NEW ALGO UPLOADED - GOING TO ANSWEAR TO CLIENT 200 OK
-                  var hed = {"status":"200","msg":"Algo stopped on prod server. Setting updated on beta server"};
-                  res.set('response-msg', JSON.stringify(hed));
-                  res.status(200).send({error:0,msg:"Algo stopped on prod server and updated setting on beta",algoId:algoId,new_algo_version:docs[0].algo_version}); 
-                }else{
-                  var hed = {"status":"200","msg":"Algorithm stopped on prod Server, Error to update beta server setting."};
-                  res.set('response-msg', JSON.stringify(hed));
-                  res.status(200).send({error:0,msg:"Algorithm stopped on prod Server, Error to update beta server setting.  ",algoId:algoId,new_algo_version:docs[0].algo_version}); 
-                }
-              });
-            }else{
-              var hed = {"status":"200","msg":"Algorithm stopped on prod Server"};
-              res.set('response-msg', JSON.stringify(hed));
-              res.status(200).send({error:0,msg:"Algo stopped on prod server: ",algoId:algoId,new_algo_version:docs[0].algo_version}); 
-            }
-          }); 
+
+
+
+
+
+
+
+          var algoName1 = docs[0]['algoName'].split('.')[0];
+          var algoNameExtension = docs[0]['algoName'].split('.')[1];
+          var algoNameEXE = algoName1+'_'+docs[0]['_id']+'.'+algoNameExtension;
+          //var command1 = 'tasklist /v /fi "IMAGENAME eq '+algoNameEXE+'" /fo csv';
+          var command2 = 'taskkill /F /IM '+algoNameEXE;
+          //console.log("command1: ",command1);
+          console.log("command2: ",command2);
+          console.log("algoName: ",algoNameEXE);
+          exec(command2, function(err, data) {  
+            console.log("process Algo.EXE stopped/deleted");
+            docs[0]['prod'].statusLabel = "Stopped";
+            docs[0]['prod'].statusValue = "3";
+            docs[0]['prod'].actionStart = false;
+            docs[0]['prod'].actionStop = true;
+
+            updateSetting(docs[0]['_id'],docs[0]['prod'],docs[0].algo_version,'prod',function(){
+              if(betaServer == 'true' && remoteServerURL != "") {
+                // PROD SERVER IS DEFINED - GOING TO UPDATE SETTING ON PROD SERVER
+                var options = {
+                  url : remoteServerURL+'/updateSettingStartStopAlgo?tmpAlgoId='+algoId+"&localLastAlgoVersion="+docs[0].algo_version+"&serverName=prod&statusLabel=Stopped&statusValue=3&actionStart=false&actionStop=true",
+                };
+                request(options, function (error, response, body) {
+                  console.log("error: ",error);
+                  var body = JSON.parse(body);
+                  if (!error && response.statusCode == 200 && body.error == '0') {
+                    //NEW ALGO UPLOADED - GOING TO ANSWEAR TO CLIENT 200 OK
+                    var hed = {"status":"200","msg":"Algo stopped on prod server. Setting updated on beta server"};
+                    res.set('response-msg', JSON.stringify(hed));
+                    res.status(200).send({error:0,msg:"Algo stopped on prod server and updated setting on beta",algoId:algoId,new_algo_version:docs[0].algo_version}); 
+                  }else{
+                    var hed = {"status":"200","msg":"Algorithm stopped on prod Server, Error to update beta server setting."};
+                    res.set('response-msg', JSON.stringify(hed));
+                    res.status(200).send({error:0,msg:"Algorithm stopped on prod Server, Error to update beta server setting.  ",algoId:algoId,new_algo_version:docs[0].algo_version}); 
+                  }
+                });
+              }else{
+                var hed = {"status":"200","msg":"Algorithm stopped on prod Server"};
+                res.set('response-msg', JSON.stringify(hed));
+                res.status(200).send({error:0,msg:"Algo stopped on prod server: ",algoId:algoId,new_algo_version:docs[0].algo_version}); 
+              }
+            }); 
+
+          });
+
+
+
+
+
         }              
       }else{
         var hed = {"status":"400","msg":" to stop algo"};

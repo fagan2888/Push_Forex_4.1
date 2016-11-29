@@ -233,6 +233,7 @@ movieStubApp.controller("homeCtrl", function ($scope, $location) {
     };
 
     $scope.cross_list = [
+      ' ',
       'AUDNZD',
       'AUDCAD',
       'AUDCHF',
@@ -1367,6 +1368,10 @@ movieStubApp.controller("homeCtrl", function ($scope, $location) {
     $scope.saveAlgoParam = function(serverName,paramToRun){
       //$scope.permanent_algo_setting = $scope.algo_setting;
       console.log("in button");
+
+      //$('#test_algo_console_label_val_id').trigger( "click" );
+      //angular.element('#test_algo_console_label_id').triggerHandler('click');
+
       storedb('algos').find({"_id":$scope.dataCurrentAlgos["_id"]},function(err,result){
         if(err == undefined || err == null || err == ""){ 
           
@@ -1378,7 +1383,7 @@ movieStubApp.controller("homeCtrl", function ($scope, $location) {
             paramToSave = $scope.algo_setting;
           }
 
-
+          console.log('paramToSave: ',paramToSave);
           result[0][serverName].param = JSON.stringify( paramToSave );
           result[0][serverName].param = JSON.parse(result[0][serverName].param);
 
@@ -1401,6 +1406,9 @@ movieStubApp.controller("homeCtrl", function ($scope, $location) {
               $scope.permanent_selected_1_cross = $scope.selected_1_cross;
               $scope.permanent_selected_2_cross = $scope.selected_2_cross;
 
+
+              $scope.configurationAlgo('','integration');
+
               $scope.$digest();
               //BUILD ALGO....THEN:
               if (serverName == 'integrationTest') {
@@ -1422,15 +1430,81 @@ movieStubApp.controller("homeCtrl", function ($scope, $location) {
       $scope.initNumberData = numberValues;
       $scope.algo_setting[type].values =  'v'+numberValues;
     };
+
+    /*$scope.$watch('NOCROSS0',function(){
+      console.log('NOCROSS0');
+      if ($scope.NOCROSS0 == false) {
+        $scope.selected_0_cross = null;
+        $scope.algo_setting[0].cross =  null;
+        //$scope.changeTimeframe('',0);
+      }
+    });
+    $scope.$watch('NOCROSS1',function(){
+      console.log('NOCROSS1');
+      if ($scope.NOCROSS1 == false) {
+        $scope.selected_1_cross = null;
+        $scope.algo_setting[1].cross =  null;
+        //$scope.changeTimeframe('',1);
+      }
+    });
+    $scope.$watch('NOCROSS2',function(){
+      console.log('NOCROSS2');
+      if ($scope.NOCROSS2 == false) {
+        $scope.selected_2_cross = null;
+        $scope.algo_setting[2].cross =  null;
+        //$scope.changeTimeframe('',2);
+      }
+    });*/
+
+    $scope.$watch('selected_0_cross',function(){
+      console.log('NOCROSS0');
+      if ($scope.selected_0_cross == '') {
+        $scope.selected_0_cross = null;
+        $scope.algo_setting[0].cross =  null;
+        //$scope.changeTimeframe('',0);
+      }
+    });
+    $scope.$watch('selected_1_cross',function(){
+      console.log('NOCROSS1');
+      if ($scope.selected_1_cross == '') {
+        $scope.selected_1_cross = null;
+        $scope.algo_setting[1].cross =  null;
+        //$scope.changeTimeframe('',1);
+      }
+    });
+    $scope.$watch('selected_2_cross',function(){
+      console.log('NOCROSS2');
+      if ($scope.selected_2_cross == '') {
+        $scope.selected_2_cross = null;
+        $scope.algo_setting[2].cross =  null;
+        //$scope.changeTimeframe('',2);
+      }
+    });
+
+
+
     $scope.changeCross = function($item, $model, $label, type){
       console.log("type:",type);
       console.log("$item:",$item);
       if (type == 0) {
-        $scope.selected_0_cross = $item;
+        if ($item == ' ') {
+          $scope.selected_0_cross = '';
+        }else{
+          $scope.selected_0_cross = $item;
+        }
       }else if (type == 1) {
-        $scope.selected_1_cross = $item;
+        if ($item == ' ') {
+          $scope.selected_1_cross = '';
+        }else{
+          $scope.selected_1_cross = $item;
+        }
       }else if (type == 2) {
-        $scope.selected_2_cross = $item;
+        if ($item == ' ') {
+           $scope.selected_2_cross = '';
+        }else{
+          $scope.selected_2_cross = $item;
+        }
+        
       };
       
       $scope.algo_setting[type].cross =  $item;
@@ -3081,7 +3155,7 @@ movieStubApp.controller("homeCtrl", function ($scope, $location) {
 
       $scope.backtestPage = true;
 
-      $scope.show_conf_app_panel = false;
+      //$scope.show_conf_app_panel = false;
       $scope.algo_conf_right_conf_algo = false;
       $(".algo_conf_right_conf_app").css( "top", "41px" );
 
