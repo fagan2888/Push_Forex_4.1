@@ -1,0 +1,38 @@
+            % INPUT parameters:
+            % -------------------------------------------------------------
+            % nameAlgo:                 string containing the name of the algo (your MATLAB function)
+            % N:                        first optimization parameter (use array!!) -> lag,slowly varying
+            % M:                        second optimization parameter (use array or put = 1!!) -> lead,highly varying
+            % N_greater_than_M:         if = 1 then skip loops where n<=m (required in some algo with smoothing)
+            % Cross:                    e.g. 'EURUSD'
+            % histName:                 filename containing hist prices, e.g. : 'nome_storico.csv'
+            % actTimeScale:             timescale of the hist data, in minutes
+            % newTimeScale:             new timescale to work with (rescale)
+            % transCost:                spread in pips
+            % pips_TP:                  max TP
+            % pips_SL:                  max allowed SL
+            % stdev_TP:                 stdev(volatility) for calculating TP
+            % stdev_SL:                 stdev(volatility) for calculating SL
+            % WhatToPlot:               what do you want to plot:
+            %                              0: nothing
+            %                              1: returns of optimized algo(training and papertrading)
+            %                              2: + sweepPlot of training
+            %                              3: + performance
+            % -------------------------------------------------------------
+
+            
+nameAlgo = 'bkt_fast_021_trending_mavg_su_min_e_max' 
+N =   10 % 1:20
+M =   5 % 2:20
+N_greater_than_M = 0              
+Cross = 'AUDCAD' % 'EURJPY' %  'EURGBP' %  'EURUSD'            
+histName = 'AUDCAD.csv'   % 'AUDCAD-12-2014-07-2016.csv' %   'EURJPY-01-2014-11-2016.csv' % 'EURUSD-01-2014-07-2016.csv' %   'AUDCAD.csv'   %  'EURGBP-01-2014-11-2016.csv' %   'EURUSD_smallsample2014_2015.csv' %  'EURGBP.csv'  %   
+actTimeScale = 1             		
+newTimeScale = 5             		
+transCost = 3
+pips_TP = 10
+pips_SL = 10
+stdev_TP = 10
+stdev_SL = 10       		
+WhatToPlot = 2
+reverse_optimization = 0
