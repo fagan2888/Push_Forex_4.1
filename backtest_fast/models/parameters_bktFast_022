@@ -21,18 +21,18 @@
             % -------------------------------------------------------------
 
             
-nameAlgo = 'bkt_fast_005b_2_inverted_macd_dynamicalTPandSL_WinMorePips' % 'bkt_fast_005c_macd_above5_dynamical' %  'bkt_fast_005b_inverted_macd_dynamicalTPandSL'  %   'bkt_fast_005_macd_dynamicalTPandSL'  %  
-N =   20 % 1:20 % 
-M =    6 % 1:10 % usato solo nel 005b_2
+nameAlgo = 'bkt_fast_022b_forex_alligator_optimizeDynClose' % 'bkt_fast_022_forex_alligator' 
+N =  1:2:20 % 31 %  13:50
+M =  2:50 % 30 %  2:30
 N_greater_than_M = 0              
-Cross = 'EURUSD'            
-histName =    'EURUSD-01-2014-07-2016.csv' % 'EURUSD-04-2014-02-2016.csv' % 'EURUSD-01-2015-07-2016.csv' % 'EURGBP.csv'  %  'AUDCAD.csv'   %    
+Cross = 'EURUSD' % 'AUDCAD' % 'EURJPY' %  'EURGBP' %              
+histName = 'EURUSD-01-2014-07-2016.csv' % 'AUDCAD.csv'   % 'AUDCAD-12-2014-07-2016.csv' %   'EURJPY-01-2014-11-2016.csv'  %  'EURGBP-01-2014-11-2016.csv' %   'EURUSD_smallsample2014_2015.csv' %  'EURGBP.csv'  %   
 actTimeScale = 1             		
-newTimeScale = 50 % [2 5 10 15 20 30 40 50 60]      % occhio che qui uso i 50 minuti!!!!!       		
+newTimeScale = 5        %% OCCHIO CHE QUI CI SONO I 5 MIN!!!!!     		
 transCost = 1
 pips_TP = 10
 pips_SL = 10
-stdev_TP = 5
-stdev_SL = 5       		
+stdev_TP = 10
+stdev_SL = 10       		
 WhatToPlot = 2
-reverse_optimization = 0
+reverse_optimization = 1
