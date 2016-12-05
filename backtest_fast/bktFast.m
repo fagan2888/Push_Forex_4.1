@@ -161,32 +161,45 @@ classdef bktFast < handle
                     
                     if temp_Training.indexClose>20
                         performance_temp_Training = p.calcSinglePerformance(nameAlgo,'bktWeb',histName,Cross,newTimeScale,transCost,10000,10,temp_Training.outputbkt,0);
+                        SR_Training = performance_temp_Training.SR;
+                        sommacumulTraining = cumsum(temp_Training.outputbkt(:,4) - transCost);
+                        maxRsuDDTraining = ( max(sommacumulTraining) - min(sommacumulTraining) ) / abs( performance_temp_Training.maxDD_pips ); 
                         
                         avgPipsOperTraining = performance_temp_Training.pipsEarned/temp_Training.indexClose;
                         display(['Train: best R/maxDD= ' , num2str(current_best),'. Avg pips/operat= ',num2str(avgPipsOperTraining),'.  N =', num2str(n),' M =', num2str(ind_best) ]);
+                        display(['Sharpe Ratio= ', num2str(SR_Training),', maxR/maxDD= ', num2str(maxRsuDDTraining)]);
                         display(['num operations =', num2str(temp_Training.indexClose) ,', pips earned =', num2str(performance_temp_Training.pipsEarned)]);
                         
                         % try paper trading on partial result and display some numbers
                         
                         temp_paperTrad = feval(algo);
                         temp_paperTrad = temp_paperTrad.spin(hisDataPaperTrad(:,4), newHisDataPaperTrad, actTimeScale, newTimeScale, n, ind_best, transCost, pips_TP, pips_SL, stdev_TP, stdev_SL, 0);
-                        performance_temp = p.calcSinglePerformance(nameAlgo,'bktWeb',histName,Cross,newTimeScale,transCost,10000,10,temp_paperTrad.outputbkt,0);
+                        performance_paperTrad = p.calcSinglePerformance(nameAlgo,'bktWeb',histName,Cross,newTimeScale,transCost,10000,10,temp_paperTrad.outputbkt,0);
+                        SR_paperTrad = performance_paperTrad.SR;
+                        sommacumulPaperTrad = cumsum(temp_paperTrad.outputbkt(:,4) - transCost);
+                        maxRsuDDPaperTrad = ( max(sommacumulPaperTrad) - min(sommacumulPaperTrad) ) / abs( performance_paperTrad.maxDD_pips ); 
                         
-                        avgPipsOperPaperTrad= performance_temp.pipsEarned/temp_paperTrad.indexClose;
-                        risultato_temp = performance_temp.pipsEarned / abs(performance_temp.maxDD_pips) ;
-                        display(['Papertrad: R/maxDD = ', num2str(risultato_temp),'. Avg pips/operat= ',num2str(avgPipsOperPaperTrad)]);
-                        display(['num operations =', num2str(temp_paperTrad.indexClose) ,', pips earned =', num2str(performance_temp.pipsEarned) ]);
+                        
+                        avgPipsOperPaperTrad= performance_paperTrad.pipsEarned/temp_paperTrad.indexClose;
+                        risultato_PaperTrad = performance_paperTrad.pipsEarned / abs(performance_paperTrad.maxDD_pips) ;
+                        display(['Papertrad: R/maxDD = ', num2str(risultato_PaperTrad),'. Avg pips/operat= ',num2str(avgPipsOperPaperTrad)]);
+                        display(['Sharpe Ratio= ', num2str(SR_paperTrad),', maxR/maxDD= ', num2str(maxRsuDDPaperTrad)]);
+                        display(['num operations =', num2str(temp_paperTrad.indexClose) ,', pips earned =', num2str(performance_paperTrad.pipsEarned) ]);
                         
                         % store results of training and paper trad for this run used for scatter plot
                         myscatterplot(index_scatterplot,1) = current_best;
-                        myscatterplot(index_scatterplot,2) = risultato_temp;
+                        myscatterplot(index_scatterplot,2) = risultato_PaperTrad;
                         myscatterplot(index_scatterplot,3) = avgPipsOperTraining;
                         myscatterplot(index_scatterplot,4) = avgPipsOperPaperTrad;
+                        myscatterplot(index_scatterplot,5) = SR_Training;
+                        myscatterplot(index_scatterplot,6) = SR_paperTrad;
+                        myscatterplot(index_scatterplot,7) = maxRsuDDTraining;
+                        myscatterplot(index_scatterplot,8) = maxRsuDDPaperTrad;
                         index_scatterplot = index_scatterplot + 1;
                         
                         
                         %plot if it is good:
-                        if risultato_temp > 1.0 && WhatToPlot > 1
+                        if risultato_PaperTrad > 1.0 && WhatToPlot > 1
                             
                             
                             figure
@@ -196,7 +209,7 @@ classdef bktFast < handle
                             hold on
                             subplot(1,2,2);
                             plot(cumsum(temp_paperTrad.outputbkt(:,4).*temp_paperTrad.outputbkt(:,6) - transCost))
-                            title(['Temp Paper Trading, ', 'N =', num2str(n),' M =', num2str(ind_best) ,'. R/maxDD = ',num2str( risultato_temp) ])
+                            title(['Temp Paper Trading, ', 'N =', num2str(n),' M =', num2str(ind_best) ,'. R/maxDD = ',num2str( risultato_PaperTrad) ])
                             
                         end
                         
@@ -221,21 +234,13 @@ classdef bktFast < handle
                 grid on
                 colorbar
                 
-                figure
-                scatter(myscatterplot(:,1), myscatterplot(:,2),'filled');
-                hold on
-                refline(1,0)
-                xlabel('training')
-                ylabel('paper trading')
-                title('R/maxDD')
+                scatterPlot_BKT_Fast(myscatterplot(:,1), myscatterplot(:,2), 'R/maxDD')
                 
-                figure
-                scatter(myscatterplot(:,3), myscatterplot(:,4),'filled');
-                hold on
-                refline(1,0)
-                xlabel('training')
-                ylabel('paper trading')
-                title('Average pips/operation')
+                scatterPlot_BKT_Fast(myscatterplot(:,3), myscatterplot(:,4), 'Average pips/operation')
+                
+                scatterPlot_BKT_Fast(myscatterplot(:,5), myscatterplot(:,6), 'Sharpe Ratio')
+               
+                scatterPlot_BKT_Fast(myscatterplot(:,7), myscatterplot(:,8), 'maxR/maxDD')
                 
             end
             
@@ -517,6 +522,72 @@ classdef bktFast < handle
             
             
         end % end of function shakeme
+        
+               function [obj] = visualizeme(obj,parameters)
+            
+            % DESCRIPTION:
+            % -------------------------------------------------------------
+            % Performs simple run of the specified algorithm on given historical data
+            % and plots the opening and closing signal on the historical
+            %
+            % How to use it:
+            %
+            % test = bktFast;
+            % test = test.visualizeme('parameters_file.txt')
+            %
+            % -------------------------------------------------------------
+            
+            
+            %% Import parameters:
+            
+            fid=fopen(parameters);
+            C = textscan(fid, '%s', 'Delimiter', '', 'CommentStyle', '%');
+            fclose(fid);
+            cellfun(@eval, C{1});
+            
+            
+            algo = str2func(nameAlgo);
+            
+            
+            %% Load and check historical
+            
+            [hisData, newHisData] = load_historical(histName, actTimeScale, newTimeScale);
+            
+            % check that M or N are no array
+            if (size(M,2)>1 || size(N,2)>1 )
+                
+                M=M(end);
+                N=N(end);
+                
+            end
+            
+            
+            %% perform try
+            
+            obj.bktfastTry = feval(algo);
+            obj.bktfastTry = obj.bktfastTry.spin(hisData(:,4), newHisData, actTimeScale, newTimeScale, N, M, transCost, pips_TP, pips_SL, stdev_TP, stdev_SL, 0);
+            
+            p = Performance_06;
+            obj.performanceTry = p.calcSinglePerformance(nameAlgo,'bktWeb',histName,Cross,newTimeScale,transCost,10000,10,obj.bktfastTry.outputbkt,0);
+
+            neg=obj.bktfastTry.arrayAperture(obj.bktfastTry.direction<0);
+            pos=obj.bktfastTry.arrayAperture(obj.bktfastTry.direction>0);
+            
+            negCl=obj.bktfastTry.outputbkt(obj.bktfastTry.direction<0,1);
+            posCl=obj.bktfastTry.outputbkt(obj.bktfastTry.direction>0,1);
+                
+                figure
+                plot(newHisData(:,4))
+                hold on
+                plot(neg,newHisData(neg,4),'ro','LineWidth',2)
+                plot(pos,newHisData(pos,4),'go','LineWidth',2)
+                plot(negCl,newHisData(negCl,4),'r*','LineWidth',2)
+                plot(posCl,newHisData(posCl,4),'g*','LineWidth',2)
+
+            
+            
+        end % end of function visualizeme
+        
         
     end % end of methods
     
