@@ -600,50 +600,58 @@ var updateTimeFrameObjLocal = function(messageArr,i){
 	return true;
 }
 
+var cross_list_update = [];
+
 var searchHistoryQuoteInDb = function(platform,source,cross,fromBacktest,toBacktest){
 
 	console.log('platform,source,cross,from,to: '+platform+' '+source+' '+cross+''+fromBacktest+' '+toBacktest);
 
-	var iteration = 0;
-	var messageArr = [];
-	var fromNumber = new Date(fromBacktest);
-	var toNumber = new Date(toBacktest);
-	var currentDate = '';
-	var messageArr = [];
-	var propQuote = cross+'_m1';
-	var transaction = db.transaction([propQuote], "readonly");
-	var objectStore = transaction.objectStore(propQuote);
-	var request = objectStore.openCursor();
-	 
-	request.onsuccess = function(e) {
-	    var cursor = e.target.result;
-	    if(cursor) {
-	    	if (request.result.value != undefined) {
-		    	//console.log("e.target: ",e.target);
-		        //console.log("Key", cursor.key);
-		        //console.dir("Data", cursor.value);
-		        //console.log("request.result.value: ",request.result.value);
+	if (  cross_list_update.indexOf(cross) == '-1' ) { 
 
-		        //var row = {source:source, platform:platform, date:date, time:time, open:open, high:high, low:low, close:close, volume:volume};
+		cross_list_update.push(cross);
 
-		        currentDate = new Date(request.result.value.date+' '+request.result.value.time);
-		        //console.log("currentDate: ",currentDate+" fromNumber: "+fromNumber+" "+" toNumber: "+toNumber);
-		        if ( (request.result.value.source == source) && (request.result.value.platform == platform) && (currentDate >= fromNumber) && (currentDate <= toNumber) ) {
-		        	console.log("request.result.value.date: "+request.result.value.date);
-		        	iteration++;
-		        	dateTime = request.result.value.date+' '+request.result.value.time;
-		        	messageArr = [cross,request.result.value.open,request.result.value.high,request.result.value.low,request.result.value.close,request.result.value.volume,dateTime];
-		        	var res = updateTimeFrameObjLocal(messageArr,iteration);
-		        	
-		        }
+		var iteration = 0;
+		var messageArr = [];
+		var fromNumber = new Date(fromBacktest);
+		var toNumber = new Date(toBacktest);
+		var currentDate = '';
+		var messageArr = [];
+		var propQuote = cross+'_m1';
+		var transaction = db.transaction([propQuote], "readonly");
+		var objectStore = transaction.objectStore(propQuote);
+		var request = objectStore.openCursor();
+		 
+		request.onsuccess = function(e) {
+		    var cursor = e.target.result;
+		    if(cursor) {
+		    	if (request.result.value != undefined) {
+			    	//console.log("e.target: ",e.target);
+			        //console.log("Key", cursor.key);
+			        //console.dir("Data", cursor.value);
+			        //console.log("request.result.value: ",request.result.value);
+
+			        //var row = {source:source, platform:platform, date:date, time:time, open:open, high:high, low:low, close:close, volume:volume};
+
+			        currentDate = new Date(request.result.value.date+' '+request.result.value.time);
+			        //console.log("currentDate: ",currentDate+" fromNumber: "+fromNumber+" "+" toNumber: "+toNumber);
+			        if ( (request.result.value.source == source) && (request.result.value.platform == platform) && (currentDate >= fromNumber) && (currentDate <= toNumber) ) {
+			        	console.log("request.result.value.date: "+request.result.value.date);
+			        	console.log("request.result.value.time: "+request.result.value.time);
+			        	iteration++;
+			        	dateTime = request.result.value.date+' '+request.result.value.time;
+			        	messageArr = [cross,request.result.value.open,request.result.value.high,request.result.value.low,request.result.value.close,request.result.value.volume,dateTime];
+			        	var res = updateTimeFrameObjLocal(messageArr,iteration);
+			        	
+			        }
+				}
+				cursor.continue();
+		    }else{
+				console.log("end cursor");
+				console.log("runningProviderTimeFrameObjs: ",runningProviderTimeFrameObjs);
+
+				self.postMessage({'d':historyLength,'type':'backtestDataReady'});
+
 			}
-			cursor.continue();
-	    }else{
-			console.log("end cursor");
-			console.log("runningProviderTimeFrameObjs: ",runningProviderTimeFrameObjs);
-
-			self.postMessage({'d':historyLength,'type':'backtestDataReady'});
-
 		}
 	}
 }

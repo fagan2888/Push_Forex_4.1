@@ -1,0 +1,16 @@
+step to build node webkit:
+
+WITH grunt-nw-builder
+
+- npm install grunt
+- npm install grunt-cli
+- npm install grunt-nw-builder --save-dev
+- from the folder:  C:\code\Push_Forex_4.1\nodeM\DesktopApp run:  grunt nwjs
+
+WITH nwjs-builder
+
+- npm install nwjs-builder -g
+- from the folder:  C:\code\Push_Forex_4.1\nodeM\DesktopApp   run:  nwb nwbuild -v 0.14.5-sdk -p win64 ./  --production
+
+
+

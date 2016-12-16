@@ -1,19 +1,47 @@
 {
-  "name": "4castersApp",
-  "description": "4casters App",
-  "version": "0.0.1",
-  "private": true,
+  "app_name": "DesktopApp",
+  "author": "simone a",
   "dependencies": {
     "crypto": "",
     "fs": "",
-    "node-cmd":"", 
-    "q":"",
-    "jsftp":"",
-    "ftp":"",
-    "tcp-port-used":"",
+    "ftp": "",
+    "jsftp": "",
     "mv": "",
-    "request": "",
+    "node-cmd": "",
     "node-gyp": "*",
+    "q": "",
+    "request": "",
+    "tcp-port-used": "",
     "zmq": "*"
+  },
+  "description": "4casters App",
+  "devDependencies": {
+    "grunt-nw-builder": "^3.1.0",
+    "gulp": "^3.9.1",
+    "gulp-util": "^3.0.7",
+    "node-webkit-builder": "^1.0.13",
+    "nw-builder": "^3.1.2"
+  },
+  "license": "",
+  "main": "myapp\\index.html",
+  "name": "4castersApp",
+  "private": true,
+  "version": "0.0.1",
+  "webexe_settings": {
+    "download_dir": "C:\\code\\Push_Forex_4.1\\nodeM\\DesktopApp",
+    "force_download": true,
+    "nw_compression_level": 0,
+    "sdk_build": true,
+    "uncompressed_folder": false,
+    "windows-x32": false,
+    "windows-x64": true
+  },
+  "webkit": {},
+  "window": {
+    "id": "DesktopApp",
+    "position": "center",
+    "resizable": false,
+    "title": "DesktopApp",
+    "toolbar": true
   }
 }
