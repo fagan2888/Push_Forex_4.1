@@ -37,24 +37,24 @@ pause(5);
 nVarargs = length(varargin);
 newTopicPub = 'NEWTOPICFROMSIGNALPROVIDER';
 for k = 1:nVarargs
-  %fprintf('   %s\n', varargin{k});
+  fprintf('   %s\n', varargin{k});
   C = strsplit(varargin{k},'@');
   if ( strcmp(C{1},'OPERATIONS')==1 )
-    %display(strcat('setting topic pub: ', varargin{k}));
+    display(strcat('setting topic pub: ', varargin{k}));
     messageBody = varargin{k};
     zmq.core.send(socket_pub, uint8(newTopicPub), 'ZMQ_SNDMORE');
     zmq.core.send(socket_pub, uint8(messageBody));
   elseif ( strcmp(C{1},'SKIP')==1 )
-    %display(strcat('setting topic pub: ', varargin{k}));
+    display(strcat('setting topic pub: ', varargin{k}));
     messageBody = varargin{k};
     zmq.core.send(socket_pub, uint8(newTopicPub), 'ZMQ_SNDMORE');
     zmq.core.send(socket_pub, uint8(messageBody));
   elseif ( strcmp(C{1},'TIMEFRAMEQUOTE')==1 )
-      %display(strcat('setting topic sub: ', varargin{k}));
+      display(strcat('setting topic sub: ', varargin{k}));
       ListS{1}{end+1} = varargin{k};
       zmq.core.setsockopt(socket, 'ZMQ_SUBSCRIBE', varargin{k});
   elseif ( strcmp(C{1},'STATUS')==1 )
-      %display(strcat('setting topic pub & sub: ', varargin{k}));
+      display(strcat('setting topic pub & sub: ', varargin{k}));
       messageBody = varargin{k};
       zmq.core.send(socket_pub, uint8(newTopicPub), 'ZMQ_SNDMORE');
       zmq.core.send(socket_pub, uint8(messageBody));
@@ -87,15 +87,15 @@ while listen
         [topicPub, messagePub]=onlineAlgoTest_client_backtest(topicName,messageBody,init);
         init = 0;
         if (~isempty( messagePub) && strcmp(messagePub,'') ==0)
-            display(strcat('Topic: ', topicPub));
-            display(strcat('Message: ', messagePub));
-            %messagePub1 = sprintf('%s %s', topicPub, messagePub);
-            %zmq.core.send(socket_pub, uint8(messagePub1));
-            zmq.core.send(socket_pub, uint8(topicPub), 'ZMQ_SNDMORE');
-            zmq.core.send(socket_pub, uint8(messagePub));
-            
+            if( strcmp(topicPub,'IDLE') == 0 )
+                display(strcat('Topic: ', topicPub));
+                display(strcat('Message: ', messagePub));
+                %messagePub1 = sprintf('%s %s', topicPub, messagePub);
+                %zmq.core.send(socket_pub, uint8(messagePub1));
+                zmq.core.send(socket_pub, uint8(topicPub), 'ZMQ_SNDMORE');
+                zmq.core.send(socket_pub, uint8(messagePub));
+            end
         end
-        
     else
         display(strcat('Message: ', messagePub));
         listener1 = strcmp(message,'BACKTESTFINISHED');

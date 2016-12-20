@@ -5,6 +5,7 @@ movieStubApp.controller("homeCtrl", function ($scope, $location) {
     console.log("process.versions['node-webkit']: ",process.versions['node-webkit']);
 
     $scope.ipTempBetaServer = 'http://52.33.13.29:3000';
+    $scope.ipTempProdServer = 'http://52.88.34.166:9091';
     //$scope.headerSrc = "tmpl/header.html";
     //$scope.movies = movieStubFactory.query();
     $scope.ipServer = "http://127.0.0.1:3000";
@@ -192,7 +193,7 @@ movieStubApp.controller("homeCtrl", function ($scope, $location) {
       Q.fcall(checkZeroMQ)
       .then(checkChocolatey)
       .then(checkPython)
-      //.then(checkVisualStudio2013)   //ADD THIS TASK ONLY IF THE USER CAN REBUILD THE MATLAB ZEROMQ LIBRARIES 
+      .then(checkVisualStudio2013)    
       .then(checkVisualStudioRedistributable2013)
       .catch(function (error) {
           // Handle any error from all above steps 
@@ -898,7 +899,7 @@ movieStubApp.controller("homeCtrl", function ($scope, $location) {
           create_worker();
         }else if ( callback_number < cross_list.length ) {
           console.log("continue to download");
-          get_quotes(platform,source,cross_list[callback_number].cross,cross_list[callback_number].dataLenght,from,to);            
+          get_quotes(platform,source,cross_list[callback_number].cross,cross_list[callback_number].dataLenght,cross_list[callback_number].timeFrame,from,to);            
         };
       }
 
@@ -1045,27 +1046,54 @@ movieStubApp.controller("homeCtrl", function ($scope, $location) {
 
                 if (download_history == 1) {
                   console.log("download history = 1");
-                  console.log("download_from: ",download_from);
+                  console.log("download_from: ",download_from);  // 2016-01-20 13:47
                   console.log("download_to: ",download_to);
                   //EX: 'history_backtest/EURGBP_2016-01-21_2016-05-17.csv'
-                  var startAsk = download_from.split(' ')[0]+'_'+download_from.split(' ')[1].split(':')[0]+'-'+download_from.split(' ')[1].split(':')[1];
-                  var stopAsk = download_to.split(' ')[0]+'_'+download_to.split(' ')[1].split(':')[0]+'-'+download_to.split(' ')[1].split(':')[1];
+
+                  var f_year_q = download_from.split(' ')[0].split('-')[0];
+                  var f_month_q = download_from.split(' ')[0].split('-')[1];
+                  var f_day_q = download_from.split(' ')[0].split('-')[2];
+                  var f_hour_q = download_from.split(' ')[1].split(':')[0];
+                  var f_minute_q = download_from.split(' ')[1].split(':')[1];
+
+                  var t_year_q = download_to.split(' ')[0].split('-')[0];
+                  var t_month_q = download_to.split(' ')[0].split('-')[1];
+                  var t_day_q = download_to.split(' ')[0].split('-')[2];
+                  var t_hour_q = download_to.split(' ')[1].split(':')[0];
+                  var t_minute_q = download_to.split(' ')[1].split(':')[1];
+
+                  //var startAsk = download_from.split(' ')[0]+'_'+download_from.split(' ')[1].split(':')[0]+'-'+download_from.split(' ')[1].split(':')[1];
+                  //var stopAsk = download_to.split(' ')[0]+'_'+download_to.split(' ')[1].split(':')[0]+'-'+download_to.split(' ')[1].split(':')[1];
                   
-                  var quotes_query = 'Algos/history_backtest/'+cross+'_'+startAsk+'_'+stopAsk+'.csv';
-                  var quotes_query_new = cross+'_'+startAsk+'_'+stopAsk+'.csv';
-                  console.log("get quote.."+quotes_query);
+                  //var quotes_query = 'Algos/history_backtest/'+cross+'_'+startAsk+'_'+stopAsk+'.csv';
+                  //var quotes_query_new = cross+'_'+startAsk+'_'+stopAsk+'.csv';
+
+                  var cross_q = cross.toLowerCase();
+                  var from_q = f_year_q+f_month_q+f_day_q+f_hour_q+f_minute_q;
+                  var to_q = t_year_q+t_month_q+t_day_q+t_hour_q+t_minute_q;
+
+                  //console.log("get quote.."+quotes_query);
                   var store_history_in_memory = ""; // Will store the contents of the file 
                   //$scope.c.destroy();
 
-
-                  var urlBeta = $scope.ipTempBetaServer+'/getHistoryQuote?historyName='+quotes_query_new;
-                  //$scope.sendRequest(urlBeta, function (error, response, body) {
+                  //52.88.34.166:9091/csvdata?cross=eurusd&from=201512231321&to=201602151321
+                  //var urlBeta = $scope.ipTempProdServer+'/getHistoryQuote?historyName='+quotes_query_new;
+                  var urlBeta = $scope.ipTempProdServer+'/csvdata?cross='+cross_q+'&from='+from_q+'&to='+to_q+'&format=json';
+                  console.log('urlBeta: ',urlBeta);
+                  $scope.sendRequest(urlBeta, function (error, response, body) {
                     
-                    //if (!error && response.statusCode == 200) {
+                    if (!error && response.statusCode == 200) {
 
 // STUB HISTORY FROM SERVER///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////                      
+                    console.log('response2: ',response);
+                    
+                    var body = JSON.parse( body.replace(/\r\n/g, ";").replace(/;(?![\s\S]*;)/, '').replace(/;(?![\s\S]*;)/, '')  ).data;
+                    //console.log('body2: ',body2.data);
+                   
+                    //2015.12.23,13:21,10931,10931,10929,10930,46
+                    
 
-                      var body = '2016.01.20,13:47,0.77152,0.77166,0.77142,0.77166,254;2016.01.21,13:48,0.77166,0.77166,0.77145,0.77145,162;2016.01.22,13:49,0.77145,0.77187,0.77145,0.77186,420;2016.01.23,13:50,0.77186,0.77212,0.77186,0.77205,273;2016.01.24,13:51,0.77206,0.77211,0.77199,0.77207,169;2016.01.25,13:52,0.77207,0.77240,0.77197,0.77231,305;2016.01.26,13:53,0.77230,0.77254,0.77224,0.77251,216;2016.01.27,13:54,0.77252,0.77288,0.77251,0.77287,388;2016.01.28,13:54,0.77286,0.77288,0.77226,0.77245,486;2016.01.29,13:54,0.77245,0.77266,0.77241,0.77246,233;2016.01.30,13:54,0.77245,0.77247,0.77195,0.77217,441;2016.01.31,13:54,0.77217,0.77239,0.77217,0.77227,389;2016.02.01,13:54,0.77228,0.77251,0.77222,0.77223,420;2016.02.02,14:04,0.77224,0.77325,0.77223,0.77325,751;2016.02.03,14:04,0.77325,0.77337,0.77255,0.77260,612;2016.02.04,14:04,0.77260,0.77260,0.77243,0.77244,274;2016.02.05,14:04,0.77245,0.77257,0.77224,0.77243,382';
+                      //var body = '2016.01.20,13:47,0.77152,0.77166,0.77142,0.77166,254;2016.01.21,13:48,0.77166,0.77166,0.77145,0.77145,162;2016.01.22,13:49,0.77145,0.77187,0.77145,0.77186,420;2016.01.23,13:50,0.77186,0.77212,0.77186,0.77205,273;2016.01.24,13:51,0.77206,0.77211,0.77199,0.77207,169;2016.01.25,13:52,0.77207,0.77240,0.77197,0.77231,305;2016.01.26,13:53,0.77230,0.77254,0.77224,0.77251,216;2016.01.27,13:54,0.77252,0.77288,0.77251,0.77287,388;2016.01.28,13:54,0.77286,0.77288,0.77226,0.77245,486;2016.01.29,13:54,0.77245,0.77266,0.77241,0.77246,233;2016.01.30,13:54,0.77245,0.77247,0.77195,0.77217,441;2016.01.31,13:54,0.77217,0.77239,0.77217,0.77227,389;2016.02.01,13:54,0.77228,0.77251,0.77222,0.77223,420;2016.02.02,14:04,0.77224,0.77325,0.77223,0.77325,751;2016.02.03,14:04,0.77325,0.77337,0.77255,0.77260,612;2016.02.04,14:04,0.77260,0.77260,0.77243,0.77244,274;2016.02.05,14:04,0.77245,0.77257,0.77224,0.77243,382';
 
 
                       console.log("body: ",body);
@@ -1145,10 +1173,10 @@ movieStubApp.controller("homeCtrl", function ($scope, $location) {
                           }
                         };
                       }
-                    //}else{
-                    //  console.log("error: ",error);
-                    //}
-                  //});
+                    }else{
+                      console.log("error: ",error);
+                    }
+                  });
 
 
 
@@ -1236,8 +1264,10 @@ movieStubApp.controller("homeCtrl", function ($scope, $location) {
 
             //TO CHANGE WHEN THE HISTORY SERVICE IS READY  
             console.log("start backtest");
-            paramArr = [{'cross':'EURGBP','timeFrame':'m1','dataLenght':'v5'}];
-            $scope.startBacktest( paramArr, '2016-01-20 13:47', '2016-02-05 14:04', 'MT4', 'ACTIVTRADES', 'backtestFromConsole', $scope.dataCurrentAlgos["_id"], $scope.dataCurrentAlgos["algoName"] );
+            paramArr = [{'cross':'EURUSD','timeFrame':'m1','dataLenght':'v5'},{'cross':'EURUSD','timeFrame':'m5','dataLenght':'v1'}];
+            //paramArr = [{'cross':'EURUSD','timeFrame':'m1','dataLenght':'v5'}];
+            //=eurusd&from=201512231321&to=201602151321
+            $scope.startBacktest( paramArr, '2015-12-23 13:21', '2015-12-23 14:21', 'MT4', 'ACTIVTRADES', 'backtestFromConsole', $scope.dataCurrentAlgos["_id"], $scope.dataCurrentAlgos["algoName"] );
           }
         });
 
