@@ -21,12 +21,12 @@
             % -------------------------------------------------------------
 
             
-nameAlgo =  'bkt_fast_022_forex_alligator' % 'bkt_fast_022c_forex_alligator_engulfing' % 'bkt_fast_022b_forex_alligator_optimizeDynClose' %  
-N =  10:50 
-M =  2:30
+nameAlgo =  'bkt_fast_022b_forex_alligator_optimizeDynClose' % 'bkt_fast_022_forex_alligator' %
+N =   3   % 1:14 % 3
+M =   29  % 2:50 % 29
 N_greater_than_M = 0              
-Cross =   'EURUSD' % 'AUDCAD' %  'EURJPY' %  'EURGBP' %              
-histName =  'EURUSD-01-2014-07-2016.csv' % 'AUDCAD.csv'   %   'AUDCAD-12-2014-07-2016.csv' %   'EURJPY-01-2014-11-2016.csv'  %  'EURGBP-01-2014-11-2016.csv' %   'EURUSD_smallsample2014_2015.csv' %  'EURGBP.csv'  %   
+Cross =  'EURUSD' % 'AUDCAD' %  'EURJPY' %  'EURGBP' %              
+histName = 'EURUSD-01-2014-07-2016.csv' % 'EURUSD_smallsample2014_2015.csv' %  'AUDCAD.csv'   % 'AUDCAD-12-2014-07-2016.csv' %   'EURJPY-01-2014-11-2016.csv'  %  'EURGBP-01-2014-11-2016.csv' %     'EURGBP.csv'  %   
 actTimeScale = 1             		
 newTimeScale = 5        %% OCCHIO CHE QUI CI SONO I 5 MIN!!!!!     		
 transCost = 1
@@ -35,4 +35,4 @@ pips_SL = 10
 stdev_TP = 10
 stdev_SL = 10       		
 WhatToPlot = 2
-reverse_optimization = 0
+reverse_optimization = 1

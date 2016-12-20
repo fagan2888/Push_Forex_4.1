@@ -482,7 +482,7 @@ classdef coreState_real02 < handle
             for k=1:3
                 
                 z=3-k;
-                    
+                
                 hl = high(end-N-z+1:end-z) - low(end-N-z+1:end-z);
                 atr(k) = mean(hl);
                 avg(k) = ( mean(high(end-M-z+1:end-z)) + mean(low(end-M-z+1:end-z)) ) / 2;
@@ -494,11 +494,11 @@ classdef coreState_real02 < handle
                 end
                 
             end
-
-%             display(['atr= ',num2str(atr(3)),', avg= ',num2str(avg(3)),', P= ',num2str(closure(end)),', s= ',num2str(s(3))]);
+            
+            %             display(['atr= ',num2str(atr(3)),', avg= ',num2str(avg(3)),', P= ',num2str(closure(end)),', s= ',num2str(s(3))]);
             
             params.set('trigger1',0); % lo uso per triggerare la chiusura, vedi dopo
-
+            
             
             if ( abs(s(1) + s(2)) == 2 && s(2)~=s(3) &&  operation == 0)  % x l'apertura
                 
@@ -519,7 +519,7 @@ classdef coreState_real02 < handle
             end
             
         end
-
+        
         
         
         function obj = core_Algo_011_stocOsc(obj, low, high, closure, params,Kperiods, Dperiods,valueTP,valueSL)
@@ -759,7 +759,7 @@ classdef coreState_real02 < handle
             
             minimo = min(low(end-N:end-1));
             massimo = max(high(end-N:end-1));
-                           
+            
             if ( closure(end) > massimo ) && ( massimo-minimo>jump )
                 
                 obj.state=1;
@@ -787,6 +787,70 @@ classdef coreState_real02 < handle
         end
         
         
+        function obj = core_Algo_022_alligator (obj,opening, closure,params,N,M,maxSL)
+            
+            %NOTE:
+            %LOGICA: opera se le derivate di 4 medie mobili sono allineate 
+            %(indica un trend) e se c'e' un pattern doji e il pattern avviene dentro le medie mobili
+            % apre in direzione del trend
+            
+            
+            closePrice=closure;
+            
+            a = (1/5)*ones(1,5);
+            smoothCinque = filter(a,1,closePrice);
+            
+            aa = (1/8)*ones(1,8);
+            smoothOtto = filter(aa,1,closePrice);
+            
+            aaa = (1/N)*ones(1,N);
+            smoothN = filter(aaa,1,closePrice);
+            
+            aaaa = (1/99)*ones(1,99); % qui e' diventato 99 perche' nn ho 100 punti...
+            smoothCento = filter(aaaa,1,closePrice);
+            
+            b = (1/M)*ones(1,M);
+            smoothClose2 = filter(b,1,closePrice);
+            fluctuations2=abs(closePrice-smoothClose2);
+            devFluct2=std(fluctuations2(M:end));
+            
+                        
+            signCinque = sign(diff(smoothCinque));
+            signOtto = sign(diff(smoothOtto));
+            signN = sign(diff(smoothN));
+            
+            newSmoothCento = smoothCento(end);
+            oldSmoothCento = params.get('smoothVal1');
+            signCento = sign(newSmoothCento - oldSmoothCento);
+            
+            oldSignCento = params.get('previous_signal');
+            
+            sommaSegni = signCinque(end) + signOtto(end) + signN(end) + signCento;
+            oldSommaSegni = signCinque(end-1) + signOtto(end-1) + signN(end-1) + oldSignCento;
+            
+            s = signCinque; % giusto per averne uno
+            
+            doji = closure(end-1) - opening(end-1);
+            
+            if (abs(sommaSegni) == 4) && (oldSommaSegni == sommaSegni) && ( doji == 0 ) && ...
+                ( sign(closure(end-1)- smoothCinque(end-1)) == -s(end-1) || ...
+                    sign(closure(end-1)- smoothOtto(end-1)) == -s(end-1) || ...
+                    sign(closure(end-1)- smoothN(end-1)) == -s(end-1) )
+                
+                obj.state=1;
+                obj.suggestedDirection=s(end);
+                volatility = min(floor(10*devFluct2),maxSL); % 100200 100201 100204 100205
+                obj.suggestedTP = volatility;
+                obj.suggestedSL = volatility;
+                
+            else
+                obj.state=0;
+            end
+            
+            params.set('smoothVal1',newSmoothCento);
+            params.set('previous_signal',signCento);
+            
+        end
         
         
         

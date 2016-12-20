@@ -75,7 +75,7 @@ classdef bkt_fast_022b_forex_alligator_optimizeDynClose < handle
             SmoothTredici = filter(aaa,1,P);
             diffTredici = sign( [0 ; diff(SmoothTredici)] );
             
-            aaaa = (1/100)*ones(1,100);
+            aaaa = (1/99)*ones(1,99);
             SmoothJolly = filter(aaaa,1,P);
             diffJolly = sign( [0 ; diff(SmoothJolly)] );
             
@@ -112,6 +112,7 @@ classdef bkt_fast_022b_forex_alligator_optimizeDynClose < handle
                     StopLossPrice =  Pbuy - segnoOperazione * StopL;
                     %
                     %                     display(['Pbuy =' num2str(Pbuy)]);
+                    %                     display(['Noper=' num2str(ntrades), 'volatility=' num2str(volatility)]);
                     %                     display(['segnoOperazione =' num2str(segnoOperazione)]);
                     %                     display(['TakeProfitPrice =' num2str(TakeProfitPrice)]);
                     %                     display(['StopLossPrice =' num2str(StopLossPrice)]);

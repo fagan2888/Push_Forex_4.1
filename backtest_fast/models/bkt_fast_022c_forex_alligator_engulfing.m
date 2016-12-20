@@ -1,4 +1,4 @@
-classdef bkt_fast_022_forex_alligator < handle
+classdef bkt_fast_022c_forex_alligator_engulfing < handle
     
     % bktfast VERSION 4 (with apri_dopo)
     
@@ -24,7 +24,7 @@ classdef bkt_fast_022_forex_alligator < handle
     
     methods
         
-        function obj = spin(obj, Pminute, matrixNewHisData, ~, newTimeScale, wTP, M, cost, ~, ~, ~, wSL, plottami)
+        function obj = spin(obj, Pminute, matrixNewHisData, ~, newTimeScale, N, M, cost, ~, ~, wTP, wSL, plottami)
             
             % Pminute = prezzo al minuto
             % P = prezzo alla new time scale
@@ -34,10 +34,9 @@ classdef bkt_fast_022_forex_alligator < handle
             % I tre smooth lo considero sempre di 5, 8, N (13) periodi
             % in piu' ho aggiunto una scala "jolly" di 100 periodi
 
-            N=10;
             
             
-            %% opera se le derivate di 4 medie mobili sono allineate (indica un trend) e se c'e' un pattern doji e il pattern avviene dentro le medie mobili
+            %% opera se le derivate di min e max sono allineate (indica un trend)
             
             op = matrixNewHisData(:,1);
             hi = matrixNewHisData(:,2);
@@ -76,17 +75,17 @@ classdef bkt_fast_022_forex_alligator < handle
             SmoothTredici = filter(aaa,1,P);
             diffTredici = sign( [0 ; diff(SmoothTredici)] );
             
-            aaaa = (1/100)*ones(1,100);
-            SmoothJolly = filter(aaaa,1,P);
-            diffJolly = sign( [0 ; diff(SmoothJolly)] );
+%             aaaa = (1/100)*ones(1,100);
+%             SmoothJolly = filter(aaaa,1,P);
+%             diffJolly = sign( [0 ; diff(SmoothJolly)] );
             
             b = (1/M)*ones(1,M);
             lag = filter(b,1,P);
             fluctuationslag=abs(P-lag);
             
             % il segnale c'e' se le tre linee sono concordi
-            s = diffCinque + diffOtto + diffTredici + diffJolly;
-            s(abs(s)~=4) = 0;
+            s = diffCinque + diffOtto + diffTredici; %+ diffJolly;
+            s(abs(s)~=3) = 0;
             s = sign(s);
             
             i = 101;
@@ -95,11 +94,10 @@ classdef bkt_fast_022_forex_alligator < handle
             
             while i < sizeStorico
                 
-                % se c'e' un pattern doji e il pattern avviene dentro le medie mobili, apri
-                % questo e' doji:
-                if   ( abs(s(i)) && P(i-1)==op(i-1) && ( sign(P(i-1)- SmoothCinque(i-1)) == -s(i-1) || sign(P(i-1)- SmoothOtto(i-1)) == -s(i-1) || sign(P(i-1)- SmoothTredici(i-1)) == -s(i-1) ) && s(i)==s(i-1) )
+                % se c'e' un pattern engulfing in accordo o in disaccordo con un segnale concreto, apri
+                if   ( abs(s(i)) && s(i)==s(i-1) && (abs(P(i) - op(i)) - abs(P(i-1) - op(i-1)) )>5 && ( ( P(i) > op(i-1) && op(i) < P(i-1) ) || ( P(i) < op(i-1) && op(i) > P(i-1) ) ) )
                     
-                    segnoOperazione = s(i);
+                    segnoOperazione = sign(P(i) - op(i));
                     
                     ntrades = ntrades + 1;
                     obj.arrayAperture(ntrades)=i;
