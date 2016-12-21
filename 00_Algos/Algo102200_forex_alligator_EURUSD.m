@@ -1,4 +1,4 @@
-function [oper, openValue, closeValue, stopLoss, noLoose, minReturn] = Algo102200_forex_alligator_EURUSD(matrix,newTimeScalePoint,newTimeScalePointEnd,openValueReal,timeSeriesProperties,indexHisData)
+function [oper, openValue, closeValue, stopLoss, takeProfit, minReturn, real] = Algo102200_forex_alligator_EURUSD(matrix,newTimeScalePoint,newTimeScalePointEnd,openValueReal,timeSeriesProperties,indexHisData)
 
 
 %
@@ -37,7 +37,7 @@ function [oper, openValue, closeValue, stopLoss, noLoose, minReturn] = Algo10220
 % openValue: suggested opening price
 % closeValue: suggested closing price
 % stopLoss: suggested SL
-% noLoose: suggested TP                                         <-  THIS IS CONFUSING
+% takeProfit: suggested TP                                         <-  THIS IS CONFUSING
 % valueTp: NOT USED IN THE MAIN PROGRAM !!!!     <- THIS IS CONFUSING
 % st: output from the stationarity test
 %
@@ -53,7 +53,7 @@ persistent  countCycle;
 openValue  = 0;
 closeValue = 0;
 stopLoss   = 0;
-noLoose    = 0;
+takeProfit = 0;
 minReturn  = 0;
 %real      = 0;
 
@@ -73,14 +73,15 @@ if(isempty(countCycle) || countCycle == 0)
     countCycle = 1;
     operationState = OperationState;
     params = Parameters;
-    map('Algo_022_alligator') = RealAlgo(operationState,params);
+    map('Algo102200') = RealAlgo(operationState,params);
     oper = 0;
+    real = 0;
     return;
 end
 
 
-ra = map('Algo_022_alligator');
-remove(map,'Algo_022_alligator');
+ra = map('Algo102200');
+remove(map,'Algo102200');
 
 params = ra.p;
 operationState = ra.os;
@@ -167,7 +168,6 @@ else
             
             latencyTreshold = 100000;    % latency treshold in minutes
             [operationState,~, params] = directTakeProfitManager (operationState, chiusure, params,TakeProfitPrice,StopLossPrice, latencyTreshold);
-
             
         elseif openValueReal < 0
             
@@ -179,6 +179,10 @@ else
     elseif abs(operationState.actualOperation) == 0
         
         if state
+            
+            % 03a
+            % -------- decMaker filter -------------------------- %
+            decMaker.decisionRealOff;
             
             % 02b
             % -------- takeProfitManager: define TP and SL ------ %
@@ -206,12 +210,13 @@ end
 oper = operationState.actualOperation;
 
 real_Algo = RealAlgo(operationState,params);
-map('Algo_022_alligator')     = real_Algo;
+map('Algo102200')     = real_Algo;
 
-openValue = params.get('openValue_');
-closeValue= params.get('closeValue');
-stopLoss  = params.get('stopLoss__');
-noLoose   = params.get('noLoose___');
+openValue  = params.get('openValue_');
+closeValue = params.get('closeValue');
+stopLoss   = params.get('stopLoss__');
+takeProfit = params.get('noLoose___');
+real       = params.get('real______');
 
 clear real_Algo;
 clear params;
@@ -233,6 +238,7 @@ clear dev;
 clear matrix;
 clear ra;
 
+oper = oper * real;
 
 end
 

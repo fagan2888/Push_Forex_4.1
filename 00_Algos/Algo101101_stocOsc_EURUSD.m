@@ -36,7 +36,7 @@ function [oper, openValue, closeValue, stopLoss, takeProfit, minReturn, real] = 
 % openValue: suggested opening price
 % closeValue: suggested closing price
 % stopLoss: suggested SL
-% noLoose: suggested TP                          <-  THIS IS CONFUSING
+% takeProfit: suggested TP (noLoose)             <-  THIS IS CONFUSING
 % valueTp: NOT USED IN THE MAIN PROGRAM !!!!     <-  THIS IS CONFUSING
 % st: output from the stationarity test
 %

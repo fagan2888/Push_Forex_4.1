@@ -1,4 +1,4 @@
-function [oper, openValue, closeValue, stopLoss, noLoose, minReturn] = Algo102000_min_max_reverting_AUDCAD(matrix,newTimeScalePoint,newTimeScalePointEnd,openValueReal,timeSeriesProperties,indexHisData)
+function [oper, openValue, closeValue, stopLoss, noLoose, minReturn,real] = Algo102000_min_max_reverting_AUDCAD(matrix,newTimeScalePoint,newTimeScalePointEnd,openValueReal,timeSeriesProperties,indexHisData)
 
 
 %
@@ -73,14 +73,15 @@ if(isempty(countCycle) || countCycle == 0)
     countCycle = 1;
     operationState = OperationState;
     params = Parameters;
-    map('Algo_020_minmax') = RealAlgo(operationState,params);
+    map('Algo102000') = RealAlgo(operationState,params);
     oper = 0;
+    real = 0;
     return;
 end
 
 
-ra = map('Algo_020_minmax');
-remove(map,'Algo_020_minmax');
+ra = map('Algo102000');
+remove(map,'Algo102000');
 
 params = ra.p;
 operationState = ra.os;
@@ -126,6 +127,7 @@ end
 
 state = cState.state;
 
+
 if operationState.lock
     
     counter = counter + 1;
@@ -166,7 +168,6 @@ else
             
             latencyTreshold = 100000;    % latency treshold in minutes
             [operationState,~, params] = directTakeProfitManager (operationState, chiusure, params,TakeProfitPrice,StopLossPrice, latencyTreshold);
-
             
         elseif openValueReal < 0
             
@@ -178,6 +179,10 @@ else
     elseif abs(operationState.actualOperation) == 0
         
         if state
+            
+            % 03a
+            % -------- decMaker filter -------------------------- %
+            decMaker.decisionRealOff;
             
             % 02b
             % -------- takeProfitManager: define TP and SL ------ %
@@ -205,12 +210,13 @@ end
 oper = operationState.actualOperation;
 
 real_Algo = RealAlgo(operationState,params);
-map('Algo_020_minmax')     = real_Algo;
+map('Algo102000')     = real_Algo;
 
 openValue = params.get('openValue_');
 closeValue= params.get('closeValue');
 stopLoss  = params.get('stopLoss__');
 noLoose   = params.get('noLoose___');
+real        = params.get('real______');
 
 clear real_Algo;
 clear params;
@@ -232,6 +238,7 @@ clear dev;
 clear matrix;
 clear ra;
 
+oper = oper * real;
 
 end
 
