@@ -26,6 +26,7 @@ classdef bktFast < handle
         performancePaperTrad
         bktfastTry
         performanceTry
+        dailyReturnsMatrix
         
     end
     
@@ -588,6 +589,35 @@ classdef bktFast < handle
             
         end % end of function visualizeme
         
+        
+        function [obj] = dailyoptimizer(obj,parameters)
+            
+            % DESCRIPTION:
+            % -------------------------------------------------------------
+            % Performs the optimization of the specified algorithm using
+            % daily returns shuffling
+            
+            
+            %% Import parameters:
+            
+            fid=fopen(parameters);
+            C = textscan(fid, '%s', 'Delimiter', '', 'CommentStyle', '%');
+            fclose(fid);
+            cellfun(@eval, C{1});
+            
+            
+            algo = str2func(nameAlgo);
+            
+            
+            %% Load, check, and split historical
+            
+            [hisData, newHisData] = load_historical(histName, actTimeScale, newTimeScale);
+            
+            
+            
+
+            
+        end % end of function dailyoptimizer
         
     end % end of methods
     
