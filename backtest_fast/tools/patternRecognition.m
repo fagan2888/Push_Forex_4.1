@@ -1,7 +1,9 @@
-function [meanPatReturn] = patternRecognition(pattern, BestPatternArr, meanPerformanceArr, minSimilarity)
+function [meanPatReturn, stdPat, trendPat] = patternRecognition(pattern, BestPatternArr, meanPerformanceArr, stdPerformanceArr, trendPerformanceArr, minSimilarity)
 
     [numberOfPatterns,patternLength] = size(BestPatternArr);
     meanPatReturn = 0;
+    stdPat = 0;
+    trendPat = 0;
 
     for numPat=1:numberOfPatterns
         
@@ -10,6 +12,8 @@ function [meanPatReturn] = patternRecognition(pattern, BestPatternArr, meanPerfo
         if howSim > minSimilarity
             
             meanPatReturn = meanPerformanceArr(numPat);
+            stdPat = stdPerformanceArr(numPat);
+            trendPat = trendPerformanceArr(numPat);
             break
             
         end

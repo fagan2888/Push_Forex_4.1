@@ -1,4 +1,4 @@
-function [returns] = bktPatterns(closePrices, BestPatternArr, meanPerformanceArr, minSimilarity)
+function [returns] = bktPatterns(closePrices, BestPatternArr, meanPerformanceArr, stdPerformanceArr, trendPerformanceArr, minSimilarity)
 
 [~,patternLength] = size(BestPatternArr);
 
@@ -16,17 +16,17 @@ for i = (patternLength+1):length(closePrices)
         pattern(y) = percentChange(closePrices(i-patternLength),closePrices(i-patternLength+y));
     end
     
-    [meanPatReturn] = patternRecognition(pattern', BestPatternArr, meanPerformanceArr, minSimilarity);
+    [meanPatReturn, stdPat, ~] = patternRecognition(pattern', BestPatternArr, meanPerformanceArr, stdPerformanceArr, trendPerformanceArr, minSimilarity);
     
-    if abs(meanPatReturn) > 10
+    if abs(meanPatReturn) > 0
         
         segnoOperazione = sign(meanPatReturn);
         ntrades = ntrades + 1;
         
         Pbuy = closePrices(i);
         
-        TakeP = floor(abs(meanPatReturn));
-        StopL = min(3*floor(abs(meanPatReturn)),50);
+        TakeP = min(stdPat,50);
+        StopL = min(stdPat,50);
         TakeProfitPrice = Pbuy + segnoOperazione * TakeP;
         StopLossPrice =  Pbuy - segnoOperazione * StopL;
         
